@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GoD SK">
+<link rel="manifest" id="pwa-manifest">
+<title>GoD SK — Spring 2026 Clan Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f4f3ef;--bg3:#eceae4;
+  --tx:#141412;--tx2:#72706a;
+  --bd:rgba(0,0,0,0.10);--bd2:rgba(0,0,0,0.20);
+  --r:10px;--rl:14px;
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',ui-monospace,monospace;
+  --fs-xs:clamp(11px,1.2vw,13px);
+  --fs-sm:clamp(13px,1.4vw,15px);
+  --fs-base:clamp(14px,1.55vw,16px);
+  --fs-lg:clamp(18px,2.2vw,22px);
+  --fs-xl:clamp(22px,3vw,28px);
+  --fs-2xl:clamp(26px,3.5vw,34px);
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a18;--bg2:#222220;--bg3:#2a2a27;
+    --tx:#f2f0e8;--tx2:#9a9890;
+    --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.17);
+  }
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background:var(--bg3);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page{max-width:1120px;margin:0 auto;padding:clamp(1.25rem,3vw,2.5rem) clamp(1rem,4vw,2rem) 5rem}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:clamp(1.25rem,2.5vw,2rem);flex-wrap:wrap;gap:12px}
+.header h1{font-size:var(--fs-xl);font-weight:700;letter-spacing:-0.02em;line-height:1.2;display:flex;align-items:center;gap:12px}
+.header h1 span{font-weight:400;color:var(--tx2);font-size:var(--fs-lg)}
+.header .sub{font-size:var(--fs-sm);color:var(--tx2);margin-top:4px}
+
+/* GoD skull logo mark */
+.god-logo{flex-shrink:0}
+.god-wordmark{letter-spacing:0.02em}
+.god-wordmark-sub{font-weight:400;color:var(--tx2);font-size:var(--fs-base);letter-spacing:0.05em;margin-left:2px}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.refresh-btn{font-size:var(--fs-sm);font-family:var(--font);font-weight:500;padding:8px 18px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s}
+.refresh-btn:hover{background:var(--bg2);color:var(--tx)}
+.auto-badge{font-size:var(--fs-xs);font-family:var(--mono);padding:5px 10px;border-radius:20px;background:var(--bg2);color:var(--tx2);border:1px solid var(--bd);white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .15s}
+.auto-badge:hover{background:var(--bg);color:var(--tx)}
+.auto-badge.live{background:#EAF3DE;color:#2d5a0e;border-color:rgba(45,90,14,0.2)}
+.auto-badge.live:hover{background:#d5ecc4}
+.status-bar{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);color:var(--tx2);margin-bottom:clamp(1rem,2vw,1.5rem);padding:10px 16px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.tabs{display:flex;gap:6px;margin-bottom:clamp(1rem,2vw,1.5rem);flex-wrap:wrap}
+.tab{font-size:var(--fs-sm);font-family:var(--font);font-weight:500;padding:8px 20px;border-radius:var(--r);border:1px solid var(--bd);background:transparent;color:var(--tx2);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.tab.active{background:var(--bg);color:var(--tx);border-color:var(--bd2)}
+.tab:hover:not(.active){background:var(--bg2);color:var(--tx)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(130px,18vw,180px),1fr));gap:clamp(8px,1.2vw,14px);margin-bottom:clamp(10px,1.5vw,16px)}
+.metric{background:var(--bg);border-radius:var(--r);padding:clamp(14px,2vw,20px) clamp(14px,2vw,22px);border:1px solid var(--bd)}
+.metric .label{font-size:var(--fs-xs);color:var(--tx2);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em}
+.metric .val{font-size:var(--fs-2xl);font-weight:600;letter-spacing:-0.02em;line-height:1.1}
+.metric .sub{font-size:var(--fs-xs);color:var(--tx2);margin-top:4px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.5vw,16px);margin-bottom:clamp(10px,1.5vw,16px)}
+@media(max-width:640px){.charts-row{grid-template-columns:1fr}}
+.card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);padding:clamp(14px,2vw,22px);margin-bottom:clamp(10px,1.5vw,14px)}
+.card h3{font-size:var(--fs-sm);font-weight:600;color:var(--tx2);margin-bottom:clamp(12px,1.5vw,18px);letter-spacing:0.01em}
+.ec-chart{width:100%}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.filter-row input{font-size:var(--fs-sm);font-family:var(--font);padding:9px 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg2);color:var(--tx);width:clamp(160px,25vw,240px);outline:none;transition:border-color .15s}
+.filter-row input:focus{border-color:#185FA5}
+.filter-row input::placeholder{color:var(--tx2)}
+.filter-hint{font-size:var(--fs-xs);color:var(--tx2)}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.player-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);table-layout:fixed}
+.player-table th{text-align:left;padding:10px 12px;color:var(--tx2);border-bottom:1px solid var(--bd);font-weight:600;font-size:var(--fs-xs);white-space:nowrap;text-transform:uppercase;letter-spacing:0.05em}
+.player-table td{padding:10px 12px;border-bottom:1px solid var(--bd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.player-table tr:last-child td{border-bottom:none}
+.player-table tbody tr:hover td{background:var(--bg2)}
+.player-table tbody tr.clickable{cursor:pointer}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:var(--fs-xs);font-weight:700;font-family:var(--mono)}
+.rank-1{background:#FAC775;color:#412402}.rank-2{background:#D3D1C7;color:#2C2C2A}.rank-3{background:#F5C4B3;color:#4A1B0C}.rank-other{background:var(--bg2);color:var(--tx2)}
+.diff-badge{font-size:var(--fs-xs);padding:3px 9px;border-radius:10px;font-weight:600;font-family:var(--mono)}
+.above{background:#EAF3DE;color:#2d5a0e}.below{background:#FCEBEB;color:#922020}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-label{font-size:var(--fs-xs);color:var(--tx2);width:140px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.bar-track{flex:1;background:var(--bg2);border-radius:4px;height:14px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.bar-val{font-size:var(--fs-xs);color:var(--tx2);width:56px;text-align:right;flex-shrink:0;font-family:var(--mono)}
+.hidden{display:none}
+.contest-notice{font-size:var(--fs-sm);color:var(--tx2);padding:12px 16px;background:var(--bg2);border-radius:var(--r);margin-bottom:clamp(1rem,2vw,1.5rem);border-left:3px solid #EF9F27}
+.contest-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.5vw,16px)}
+@media(max-width:700px){.contest-grid{grid-template-columns:1fr}}
+.contest-card{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.contest-card-header{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+.contest-card-header .title{font-size:var(--fs-sm);font-weight:600;color:var(--tx)}
+.contest-card-header .badge{font-size:var(--fs-xs);padding:3px 10px;border-radius:10px;font-weight:600}
+.badge-top{background:#EAF3DE;color:#2d5a0e}
+.badge-bot{background:#FCEBEB;color:#922020}
+.badge-epic{background:#EEEDFE;color:#3C3489}
+.contest-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.contest-table th{text-align:left;padding:8px 14px;color:var(--tx2);font-weight:600;font-size:var(--fs-xs);border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:0.05em}
+.contest-table td{padding:9px 14px;border-bottom:1px solid var(--bd);color:var(--tx)}
+.contest-table tr:last-child td{border-bottom:none}
+.contest-table tbody tr:hover td{background:var(--bg2)}
+.contest-table tbody tr[onclick]{cursor:pointer}
+
+/* Mobile leaderboard — hide less important columns on small screens */
+@media(max-width:600px){
+  .lb-col-epic{display:none}
+  .lb-col-bar{display:none}
+  .lb-col-rel{display:none}
+  .player-table td,.player-table th{padding:10px 8px}
+  .player-table{table-layout:auto}
+  /* Make name column not truncate */
+  .lb-col-name{max-width:none;white-space:normal;word-break:break-word}
+}
+@media(max-width:400px){
+  .lb-col-diff{display:none}
+}
+
+/* ── Mobile bottom nav ── */
+@media(max-width:680px){
+  .tabs{ display:none }
+  .page{ padding-bottom:6rem }
+  body{ padding-bottom:env(safe-area-inset-bottom) }
+}
+@media(min-width:681px){
+.global-search-icon{
+  position:absolute;
+  left:11px;top:50%;transform:translateY(-50%);
+  color:var(--tx2);font-size:15px;pointer-events:none;
+}
+.global-search-input{
+  font-size:var(--fs-sm);font-family:var(--font);
+  padding:8px 14px 8px 34px;
+  border-radius:var(--r);
+  border:1px solid var(--bd2);
+  background:var(--bg2);
+  color:var(--tx);
+  width:clamp(140px,18vw,220px);
+  outline:none;
+  transition:border-color .15s, width .2s;
+}
+.global-search-input:focus{
+  border-color:#185FA5;
+  width:clamp(180px,22vw,280px);
+}
+.global-search-input::placeholder{color:var(--tx2)}
+.global-search-results{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;right:0;
+  background:var(--bg);
+  border:1px solid var(--bd2);
+  border-radius:var(--rl);
+  box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  z-index:1000;
+  max-height:320px;
+  overflow-y:auto;
+  min-width:240px;
+}
+.gsr-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;
+  cursor:pointer;
+  border-bottom:1px solid var(--bd);
+  gap:12px;
+  transition:background .1s;
+}
+.gsr-item:last-child{border-bottom:none}
+.gsr-item:hover{background:var(--bg2)}
+.gsr-item-name{font-size:var(--fs-sm);font-weight:500;color:var(--tx)}
+.gsr-item-meta{font-size:var(--fs-xs);color:var(--tx2);font-family:var(--mono);text-align:right;flex-shrink:0}
+.gsr-item-rank{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--bg2);color:var(--tx2);flex-shrink:0;margin-right:6px}
+.gsr-empty{padding:16px 14px;font-size:var(--fs-sm);color:var(--tx2);text-align:center}
+@media(max-width:680px){
+}
+
+.bottom-nav{ display:none !important }
+}
+.bottom-nav{
+  display:flex;
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--bg);
+  border-top:1px solid var(--bd);
+  z-index:999;
+  padding-bottom:env(safe-area-inset-bottom);
+  box-shadow:0 -4px 24px rgba(0,0,0,0.12);
+}
+.bn-item{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding:10px 4px 8px;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  color:var(--tx2);
+  font-family:var(--font);
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:0.02em;
+  transition:color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.bn-item i{
+  font-size:22px;
+  line-height:1;
+  transition:color .15s, transform .15s;
+}
+.bn-item.active{
+  color:var(--tx);
+}
+.bn-item.active i{
+  color:#185FA5;
+  transform:translateY(-1px);
+}
+.bn-item:active i{
+  transform:scale(0.9);
+}
+
+/* Sortable th */
+.player-table th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+.player-table th.sortable:hover{color:var(--tx)}
+.sort-icon{display:inline-block;margin-left:4px;opacity:0.4;font-size:10px;vertical-align:1px}
+.player-table th.sort-asc .sort-icon::after{content:'↑';opacity:1}
+.player-table th.sort-desc .sort-icon::after{content:'↓';opacity:1}
+.player-table th.sort-asc .sort-icon,.player-table th.sort-desc .sort-icon{opacity:1;color:var(--tx)}
+
+/* Animated counters */
+.metric .val{transition:none}
+
+/* Compare mode */
+.compare-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.compare-bar-label{font-size:var(--fs-xs);color:var(--tx2);width:130px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compare-bar-wrap{flex:1;background:var(--bg2);border-radius:4px;height:10px;overflow:hidden;position:relative}
+.compare-bar-a{height:100%;border-radius:4px;position:absolute;left:0;top:0;transition:width .4s}
+.compare-bar-b{height:100%;border-radius:4px 0 0 4px;position:absolute;right:0;top:0;transition:width .4s;opacity:0.6}
+.compare-vals{font-size:var(--fs-xs);font-family:var(--mono);width:80px;text-align:right;flex-shrink:0}
+.compare-select{font-size:var(--fs-sm);font-family:var(--font);padding:8px 12px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg2);color:var(--tx);outline:none;min-width:160px;cursor:pointer}
+.compare-select:focus{border-color:#185FA5}
+.compare-header{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.compare-player-label{font-size:var(--fs-sm);font-weight:600;display:flex;align-items:center;gap:8px}
+.compare-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tied-note{font-size:var(--fs-xs);color:var(--tx2);padding:7px 14px;border-top:1px solid var(--bd);font-style:italic}
+.profile-back{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);font-weight:500;font-family:var(--font);color:var(--tx2);cursor:pointer;margin-bottom:clamp(1rem,2vw,1.5rem);background:none;border:none;padding:0;transition:color .15s}
+.profile-back:hover{color:var(--tx)}
+.profile-header{background:var(--bg);border:1px solid var(--bd);border-radius:var(--rl);padding:clamp(16px,2.5vw,28px);margin-bottom:clamp(10px,1.5vw,14px);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.profile-avatar{width:clamp(56px,7vw,76px);height:clamp(56px,7vw,76px);border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:clamp(15px,2vw,20px);font-weight:600;flex-shrink:0;border:1px solid var(--bd);color:var(--tx2)}
+.profile-name{font-size:var(--fs-xl);font-weight:600;letter-spacing:-0.02em;margin-bottom:4px}
+.profile-rank-line{font-size:var(--fs-sm);color:var(--tx2)}
+.profile-stats{display:flex;gap:clamp(16px,3vw,32px);flex-wrap:wrap}
+.profile-stat .val{font-size:var(--fs-lg);font-weight:600;letter-spacing:-0.01em}
+.profile-stat .lbl{font-size:var(--fs-xs);color:var(--tx2);margin-top:3px;font-weight:500}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.5vw,16px);margin-bottom:clamp(10px,1.5vw,14px)}
+@media(max-width:640px){.profile-grid{grid-template-columns:1fr}}
+.section-label{font-size:var(--fs-xs);font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px}
+.chest-group-block{margin-bottom:4px}
+.chest-group-title{font-size:var(--fs-xs);font-weight:700;color:var(--tx2);padding:10px 0 5px;border-bottom:1px solid var(--bd);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em}
+.profile-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.profile-bar-label{font-size:var(--fs-xs);color:var(--tx2);width:clamp(120px,16vw,160px);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.profile-bar-track{flex:1;background:var(--bg2);border-radius:3px;height:10px;overflow:hidden}
+.profile-bar-fill{height:100%;border-radius:3px}
+.profile-bar-val{font-size:var(--fs-xs);color:var(--tx);width:36px;text-align:right;flex-shrink:0;font-weight:600;font-family:var(--mono)}
+.pct-pill{font-size:var(--fs-xs);padding:2px 7px;border-radius:8px;background:var(--bg2);color:var(--tx2);margin-left:3px}
+.nav-btns{display:flex;gap:8px}
+.nav-btn{font-size:var(--fs-sm);font-family:var(--font);font-weight:500;padding:7px 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s,color .15s}
+.nav-btn:hover{background:var(--bg2);color:var(--tx)}
+.nav-btn:disabled{opacity:0.3;cursor:not-allowed}
+.trend-window-btn.active{background:var(--bg2);color:var(--tx);border-color:var(--bd2)}
+
+/* PWA install banner */
+.pwa-banner{
+  position:fixed;bottom:calc(env(safe-area-inset-bottom) + 70px);left:50%;transform:translateX(-50%);
+  background:var(--bg);border:1px solid var(--bd2);border-radius:var(--rl);
+  padding:14px 18px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.25);z-index:1000;
+  max-width:340px;width:calc(100% - 32px);
+  animation:slideUp .3s ease-out;
+}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.pwa-banner-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#185FA5,#7F77DD);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.pwa-banner-text{flex:1;min-width:0}
+.pwa-banner-title{font-size:var(--fs-sm);font-weight:600;color:var(--tx);margin-bottom:2px}
+.pwa-banner-sub{font-size:var(--fs-xs);color:var(--tx2)}
+.pwa-banner-btn{font-size:var(--fs-xs);font-family:var(--font);font-weight:600;padding:7px 14px;border-radius:var(--r);border:none;background:#185FA5;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.pwa-banner-btn:hover{background:#1370bf}
+.pwa-banner-close{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:18px;padding:0;line-height:1;flex-shrink:0}
+@media(min-width:681px){.pwa-banner{display:none!important}}
+
+/* Participation gauge */
+.gauge-wrap{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.gauge-track{flex:1;background:var(--bg2);border-radius:8px;height:18px;overflow:hidden;position:relative}
+.gauge-fill{height:100%;border-radius:8px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.gauge-label{font-size:var(--fs-xs);color:var(--tx2);white-space:nowrap;width:44px;text-align:right;font-family:var(--mono);font-weight:600}
+
+/* Status pill */
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-xs);padding:3px 9px;border-radius:10px;font-weight:600;white-space:nowrap}
+.pill-hot{background:#EAF3DE;color:#2d5a0e}
+.pill-active{background:#E8F4FD;color:#185FA5}
+.pill-idle{background:#FEF3E2;color:#9a5c00}
+.pill-inactive{background:#FCEBEB;color:#922020}
+.pill-streak{background:#F0EEFE;color:#4C3D9E}
+
+/* Streak / inactivity table */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:640px){.status-grid{grid-template-columns:1fr}}
+.status-list{list-style:none;padding:0}
+.status-list li{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);gap:8px}
+.status-list li:last-child{border-bottom:none}
+.status-list .sname{font-size:var(--fs-sm);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.status-list .sname:hover{color:#185FA5}
+.status-days{font-size:var(--fs-xs);font-family:var(--mono);color:var(--tx2);flex-shrink:0}
+
+/* Overview participation section */
+.overview-section-title{font-size:var(--fs-xs);font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px}
+@media(max-width:480px){
+  .profile-header{flex-direction:column}
+  .profile-stats{gap:16px}
+  .tabs{gap:4px}
+  .tab{padding:7px 14px;font-size:13px}
+  .nav-btns{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <h1>
+        <!-- GoD skull icon -->
+        <svg class="god-logo" width="38" height="38" viewBox="0 0 38 38" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <rect width="38" height="38" rx="9" fill="#1a1a18"/>
+          <!-- crossed blades micro -->
+          <line x1="10" y1="28" x2="28" y2="10" stroke="#c8c4b8" stroke-width="2" stroke-linecap="round"/>
+          <line x1="10" y1="10" x2="28" y2="28" stroke="#c8c4b8" stroke-width="2" stroke-linecap="round"/>
+          <!-- skull -->
+          <ellipse cx="19" cy="17" rx="8" ry="7.5" fill="#f0efe8"/>
+          <rect x="11" y="21" width="16" height="5" rx="1.5" fill="#f0efe8"/>
+          <rect x="13.5" y="25" width="11" height="4" rx="2" fill="#f0efe8"/>
+          <!-- eyes -->
+          <ellipse cx="15.5" cy="17" rx="2.5" ry="2.5" fill="#1a1a18"/>
+          <ellipse cx="22.5" cy="17" rx="2.5" ry="2.5" fill="#1a1a18"/>
+          <ellipse cx="15.5" cy="17" rx="1.5" ry="1.5" fill="#E24B4A"/>
+          <ellipse cx="22.5" cy="17" rx="1.5" ry="1.5" fill="#E24B4A"/>
+          <!-- nose -->
+          <polygon points="19,21 17,24 21,24" fill="#1a1a18"/>
+          <!-- teeth -->
+          <rect x="13.5" y="26" width="2.5" height="2.5" rx="0.5" fill="#1a1a18"/>
+          <rect x="17" y="26" width="2.5" height="3" rx="0.5" fill="#1a1a18"/>
+          <rect x="20.5" y="26" width="2.5" height="3" rx="0.5" fill="#1a1a18"/>
+          <rect x="24" y="26" width="2.5" height="2.5" rx="0.5" fill="#1a1a18"/>
+        </svg>
+        <span class="god-wordmark">GoD SK<span class="god-wordmark-sub"> — Spring 2026</span></span>
+      </h1>
+      <div class="sub" id="last-updated">Connecting to Google Sheets...</div>
+    </div>
+    <div class="header-right">
+      <button class="auto-badge" id="auto-badge" onclick="manualRefresh()" title="Click to refresh now">
+        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px"></i> <span id="countdown">180</span>s
+      </button>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span class="dot" id="status-dot" style="background:#EF9F27"></span>
+    <span id="status-text">Fetching live data from Google Sheets...</span>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab" onclick="switchTab('leaderboard',this)">Leaderboard</button>
+    <button class="tab" onclick="switchTab('contest',this)">Contest rankings</button>
+    <button class="tab" onclick="switchTab('chests',this)">Chest breakdown</button>
+    <button class="tab" onclick="switchTab('compare',this)">Compare players</button>
+    <button class="tab" onclick="switchTab('activity',this)">Activity</button>
+    <button class="tab" onclick="switchTab('history',this)">Cycle history</button>
+  </div>
+  <div id="tab-overview"></div>
+  <div id="tab-leaderboard" class="hidden"></div>
+  <div id="tab-contest" class="hidden"></div>
+  <div id="tab-chests" class="hidden"></div>
+  <div id="tab-compare" class="hidden"></div>
+  <div id="tab-activity" class="hidden"></div>
+  <div id="tab-history" class="hidden"></div>
+  <div id="tab-premium" class="hidden"></div>
+</div>
+
+<!-- PWA install banner (Android/Chrome) -->
+<div class="pwa-banner hidden" id="pwa-banner">
+  <div class="pwa-banner-icon" style="background:#1a1a18;border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg"><ellipse cx="19" cy="16" rx="9" ry="8.5" fill="#f0efe8"/><rect x="10" y="21" width="18" height="5.5" rx="1.5" fill="#f0efe8"/><rect x="13" y="25.5" width="12" height="5" rx="2" fill="#f0efe8"/><ellipse cx="15" cy="16" rx="3" ry="3" fill="#1a1a18"/><ellipse cx="23" cy="16" rx="3" ry="3" fill="#1a1a18"/><ellipse cx="15" cy="16" rx="1.6" ry="1.6" fill="#E24B4A"/><ellipse cx="23" cy="16" rx="1.6" ry="1.6" fill="#E24B4A"/><polygon points="19,21 16.5,25 21.5,25" fill="#1a1a18"/></svg></div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Add to Home Screen</div>
+    <div class="pwa-banner-sub">Install GoD SK for quick access</div>
+  </div>
+  <button class="pwa-banner-btn" id="pwa-install-btn">Install</button>
+  <button class="pwa-banner-close" onclick="dismissPwaBanner()" aria-label="Dismiss">×</button>
+</div>
+
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Main navigation">
+  <button class="bn-item active" id="bn-overview" onclick="mobileTab('overview')" aria-label="Overview">
+    <svg width="22" height="22" viewBox="0 0 38 38" aria-hidden="true" style="margin-bottom:1px" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="19" cy="16" rx="9" ry="8.5" fill="currentColor" opacity="0.9"/>
+      <rect x="10" y="21" width="18" height="5.5" rx="1.5" fill="currentColor" opacity="0.9"/>
+      <rect x="13" y="25.5" width="12" height="5" rx="2" fill="currentColor" opacity="0.9"/>
+      <ellipse cx="15" cy="16" rx="3" ry="3" fill="var(--bg,#1a1a18)"/>
+      <ellipse cx="23" cy="16" rx="3" ry="3" fill="var(--bg,#1a1a18)"/>
+      <ellipse cx="15" cy="16" rx="1.6" ry="1.6" fill="#E24B4A"/>
+      <ellipse cx="23" cy="16" rx="1.6" ry="1.6" fill="#E24B4A"/>
+      <polygon points="19,21 16.5,25 21.5,25" fill="var(--bg,#1a1a18)"/>
+      <rect x="13.5" y="27" width="2.5" height="2.5" rx="0.5" fill="var(--bg,#1a1a18)"/>
+      <rect x="17.2" y="27" width="2.5" height="3" rx="0.5" fill="var(--bg,#1a1a18)"/>
+      <rect x="20.7" y="27" width="2.5" height="3" rx="0.5" fill="var(--bg,#1a1a18)"/>
+      <rect x="24" y="27" width="2.5" height="2.5" rx="0.5" fill="var(--bg,#1a1a18)"/>
+    </svg>
+    <span>Overview</span>
+  </button>
+  <button class="bn-item" id="bn-leaderboard" onclick="mobileTab('leaderboard')" aria-label="Leaderboard">
+    <i class="ti ti-trophy"></i>
+    <span>Leaders</span>
+  </button>
+  <button class="bn-item" id="bn-contest" onclick="mobileTab('contest')" aria-label="Contest">
+    <i class="ti ti-sword"></i>
+    <span>Contest</span>
+  </button>
+  <button class="bn-item" id="bn-chests" onclick="mobileTab('chests')" aria-label="Chests">
+    <i class="ti ti-box"></i>
+    <span>Chests</span>
+  </button>
+  <button class="bn-item" id="bn-compare" onclick="mobileTab('compare')" aria-label="Compare">
+    <i class="ti ti-arrows-diff"></i>
+    <span>Compare</span>
+  </button>
+  <button class="bn-item" id="bn-activity" onclick="mobileTab('activity')" aria-label="Activity">
+    <i class="ti ti-activity"></i>
+    <span>Activity</span>
+  </button>
+  <button class="bn-item" id="bn-history" onclick="mobileTab('history')" aria-label="History">
+    <i class="ti ti-history"></i>
+    <span>History</span>
+  </button>
+</nav>
+
+<script>
+const SHEET_ID   = '17W1y5fZdl3YWofkWnubwAtLvhWrFBzgPdN0VdDi4Sa0';
+const GID        = '181827579';
+const LOG_GID    = '1476283132';
+// Archived cycles — newest first. Add a new entry each time a cycle is archived.
+const ARCHIVE_SHEETS = [
+	{id:'1J4OhqHSZfQIHrfTSLRtjQIoT6aLb9wfGHqdDOiYZoRQ', gid:'181827579'},  // most recent
+	{id:'1LxTP1f4JWB79z8O-SgU3gClWniDF6LeXcBXFh8Kcwbc', gid:'181827579'},  // older
+];
+const ARCHIVE_GID = '181827579';
+const AUTO_REFRESH_SECS = 180;
+
+// Players to exclude from display (old names / duplicates)
+// Key = name to hide, Value = current canonical name (for log lookup)
+const EXCLUDED_PLAYERS = new Map([
+	['Toxin', 'ToXin'],  // renamed
+]);
+
+// Helper: get all name aliases for a player (current name + any old names)
+function getPlayerAliases(playerName){
+	var aliases=[playerName];
+	EXCLUDED_PLAYERS.forEach(function(canonical, oldName){
+		if(canonical.toLowerCase()===playerName.toLowerCase()) aliases.push(oldName);
+	});
+	return aliases;
+}
+
+let allPlayers     = [];
+let archivePlayers = [];   // currently-selected archive cycle (defaults to most recent)
+let allArchives    = [];   // [{label, days, players}] all loaded archive cycles, newest first
+let selectedArchiveIdx = 0;
+let logEvents      = [];
+let ecInstances    = {};
+let archiveCycleLabel = 'Last cycle';
+let archiveCycleDays  = null;
+let currentCycleLabel = '';
+let currentCycleDays  = null;
+let currentProfileName = null;
+let lbSort   = {col:'rank', dir:'asc'};
+let histSort = {col:'pace', dir:'desc'};
+let activeTab = 'overview';  // track current tab so silent refresh doesn't disrupt
+let countdownTimer = null;
+let autoRefreshTimer = null;
+let secondsLeft = AUTO_REFRESH_SECS;
+
+// ── Detect dark mode for ECharts ──────────────────────────────────
+const isDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
+const EC_TEXT    = () => isDark() ? '#9a9890' : '#72706a';
+const EC_TEXT2   = () => isDark() ? '#f2f0e8' : '#141412';
+const EC_SPLIT   = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+const EC_BG      = () => isDark() ? '#1a1a18' : '#ffffff';
+const EC_TOOLTIP = () => isDark() ? '#222220' : '#ffffff';
+
+// ── Column layout (hardcoded from confirmed gviz structure) ───────
+const CHEST_COLS = [
+	{name:'L25 Crypt',      pts:20,  col:4,  group:'Crypt',      color:'#378ADD'},
+	{name:'L20 Crypt',      pts:5,   col:5,  group:'Crypt',      color:'#378ADD'},
+	{name:'L15 Crypt',      pts:3,   col:6,  group:'Crypt',      color:'#378ADD'},
+	{name:'L10 Crypt',      pts:2,   col:7,  group:'Crypt',      color:'#378ADD'},
+	{name:'L5 Crypt',       pts:1,   col:8,  group:'Crypt',      color:'#378ADD'},
+	{name:'L30 rare Crypt', pts:60,  col:9,  group:'Rare Crypt', color:'#7F77DD'},
+	{name:'L25 rare Crypt', pts:40,  col:10, group:'Rare Crypt', color:'#7F77DD'},
+	{name:'L20 rare Crypt', pts:20,  col:11, group:'Rare Crypt', color:'#7F77DD'},
+	{name:'L15 rare Crypt', pts:8,   col:12, group:'Rare Crypt', color:'#7F77DD'},
+	{name:'L10 rare Crypt', pts:2,   col:13, group:'Rare Crypt', color:'#7F77DD'},
+	{name:'L35 epic Crypt', pts:140, col:14, group:'Epic Crypt', color:'#D4537E'},
+	{name:'L30 epic Crypt', pts:80,  col:15, group:'Epic Crypt', color:'#D4537E'},
+	{name:'L25 epic Crypt', pts:50,  col:16, group:'Epic Crypt', color:'#D4537E'},
+	{name:'L20 epic Crypt', pts:30,  col:17, group:'Epic Crypt', color:'#D4537E'},
+	{name:'L15 epic Crypt', pts:10,  col:18, group:'Epic Crypt', color:'#D4537E'},
+	{name:'L30 Citadel',    pts:80,  col:19, group:'Citadel',    color:'#1D9E75'},
+	{name:'L25 Citadel',    pts:60,  col:20, group:'Citadel',    color:'#1D9E75'},
+	{name:'L20 Citadel',    pts:30,  col:21, group:'Citadel',    color:'#1D9E75'},
+	{name:'L15 Citadel',    pts:4,   col:22, group:'Citadel',    color:'#1D9E75'},
+	{name:'L10 Citadel',    pts:2,   col:23, group:'Citadel',    color:'#1D9E75'},
+	{name:'L31+ Heroic',    pts:56,  col:24, group:'Heroic',     color:'#EF9F27'},
+	{name:'L25-30 Heroic',  pts:32,  col:25, group:'Heroic',     color:'#EF9F27'},
+	{name:'L16-24 Heroic',  pts:11,  col:26, group:'Heroic',     color:'#EF9F27'},
+
+
+	{name:'Ragnarok Chests',pts:10,  col:33, group:'Special',    color:'#D85A30'},
+	{name:'Special',        pts:8,   col:34, group:'Special',    color:'#D85A30'},
+	{name:'Ancient Chest',  pts:10,  col:35, group:'Special',    color:'#D85A30'},
+	{name:'Epic Monster',   pts:15,  col:36, group:'Special',    color:'#D85A30'},
+	{name:'Arachne',        pts:15,  col:37, group:'Special',    color:'#D85A30'}
+];
+
+const CHEST_GROUPS = [
+	{label:'Crypt',          cols:CHEST_COLS.filter(c=>c.group==='Crypt'),          color:'#378ADD'},
+	{label:'Rare Crypt',     cols:CHEST_COLS.filter(c=>c.group==='Rare Crypt'),     color:'#7F77DD'},
+	{label:'Epic Crypt',     cols:CHEST_COLS.filter(c=>c.group==='Epic Crypt'),     color:'#D4537E'},
+	{label:'Citadel',        cols:CHEST_COLS.filter(c=>c.group==='Citadel'),        color:'#1D9E75'},
+	{label:'Heroic',         cols:CHEST_COLS.filter(c=>c.group==='Heroic'),         color:'#EF9F27'},
+	{label:'Special',        cols:CHEST_COLS.filter(c=>c.group==='Special'),        color:'#D85A30'}
+];
+
+const EPIC_COLS  = CHEST_COLS.filter(c=>c.group==='Epic Crypt').map(c=>c.name);
+
+// Premium chests — excluded from main display but available on #premium tab
+const PREMIUM_CHEST_COLS = [
+	{name:'Magic Chest',    pts:90,  col:27, color:'#E24B4A', usd:250},
+	{name:'Precious Chest', pts:90,  col:28, color:'#E24B4A', usd:100},
+	{name:'Golden Chest',   pts:40,  col:29, color:'#FAC775', usd:50},
+	{name:'Silver Chest',   pts:20,  col:30, color:'#888780', usd:20},
+	{name:'Bronze Chest',   pts:15,  col:31, color:'#888780', usd:10},
+	{name:'Wooden Chest',   pts:10,  col:32, color:'#888780', usd:5},
+];
+// 3 chests = 1 pack, so dollar value = floor(count/3) * usd
+function chestUsd(count, usdPerPack){ return Math.floor(count/3)*usdPerPack; }
+function fmtUsd(v){ return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v; }
+const GROUP_NAMES = [...new Set(CHEST_COLS.map(c=>c.group))];
+
+function epicScore(p){ return p.chests['Epic Monster']||0; }
+
+// Total Battle hero & captain portraits from totalbattle guide (wixstatic CDN)
+const HERO_PORTRAITS = [
+	{name:'Garvel',    url:'https://static.wixstatic.com/media/d5cac9_569b714e20f344e683c728515fbd2e20~mv2.png/v1/fill/w_258,h_364,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GARVEL.png'},
+	{name:'Julia',     url:'https://static.wixstatic.com/media/d5cac9_6efdaa1bf394495cbf8073c82e6f636a~mv2.png/v1/fill/w_257,h_364,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/JULIA.png'},
+	{name:'Faron',     url:'https://static.wixstatic.com/media/d5cac9_ac4e93e431004324b28e14ab17540a09~mv2.png/v1/fill/w_294,h_412,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/FARON.png'},
+	{name:'Guan Yu',   url:'https://static.wixstatic.com/media/d5cac9_0f7aa7222a1f4551b011c534f9db3ff3~mv2.png/v1/fill/w_296,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/GUAN%20YU.png'},
+	{name:'Haemon',    url:'https://static.wixstatic.com/media/d5cac9_603bf9a24e53479985749d900e868b4b~mv2.png/v1/fill/w_291,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/HAEMON.png'},
+	{name:'Matemhain', url:'https://static.wixstatic.com/media/d5cac9_db86448c21b24c42a33cc4cc5195720e~mv2.png/v1/fill/w_294,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/MATEMHAIN.png'},
+	{name:'Meriones',  url:'https://static.wixstatic.com/media/d5cac9_c59d1c84771d41a0ac9b85989dbe02b3~mv2.png/v1/fill/w_294,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/MERIONES.png'},
+	{name:'Nectarius', url:'https://static.wixstatic.com/media/d5cac9_3915391183f34091aeb41b4cf50120a6~mv2.png/v1/fill/w_298,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/NECTARIUS.png'},
+	{name:'Ryjong',    url:'https://static.wixstatic.com/media/d5cac9_1034bbe903c64e699553dca846d1a9c6~mv2.png/v1/fill/w_300,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/RYJONG.png'},
+	{name:'Svyatogor', url:'https://static.wixstatic.com/media/d5cac9_f985c6f7f70f45cdab2412d427a4e41d~mv2.png/v1/fill/w_297,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SVYATOGOR.png'},
+	{name:'Thaddeus',  url:'https://static.wixstatic.com/media/d5cac9_efa630b6b70b4846b134c23750c041bb~mv2.png/v1/fill/w_294,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/THADDEUS.png'},
+	{name:'Thelensia', url:'https://static.wixstatic.com/media/d5cac9_0e0f801d72424c559d6ab0c6af198e15~mv2.png/v1/fill/w_299,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/THELENSIA.png'},
+	{name:'Yamato',    url:'https://static.wixstatic.com/media/d5cac9_f950276470e94914b8bc9c3c8c030c18~mv2.png/v1/fill/w_297,h_417,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/YAMATO.png'},
+];
+
+// Deterministic portrait pick — same player always gets same hero
+function getPortrait(playerName) {
+	let hash = 0;
+	for(let i=0; i<playerName.length; i++) hash = (hash*31 + playerName.charCodeAt(i)) >>> 0;
+	return HERO_PORTRAITS[hash % HERO_PORTRAITS.length];
+}
+
+// ── Data fetching ─────────────────────────────────────────────────
+function parseGvizResponse(raw){
+	const m = raw.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+	if(!m) throw new Error('Unexpected response format');
+	return JSON.parse(m[1]);
+}
+function cellStr(c){ return(!c||c.v==null)?'':String(c.v).trim(); }
+function cellNum(c){ if(!c||c.v==null)return 0; return typeof c.v==='number'?c.v:parseInt(String(c.v).replace(/[^0-9]/g,''))||0; }
+
+function buildPlayers(table){
+	const rows = table.rows;
+	const nameIdx = 2, ptsIdx = 3;
+	const SKIP = new Set(['Points per chest:','Clan Average per Person','Clan Total:','Name','']);
+	const players = [];
+	for(let i=6;i<rows.length;i++){
+		const row=rows[i]; if(!row||!row.c) continue;
+		const name=cellStr(row.c[nameIdx]);
+		if(!name||SKIP.has(name)||EXCLUDED_PLAYERS.has(name)) continue;
+		const pts=cellNum(row.c[ptsIdx]);
+		const chests={};
+		CHEST_COLS.forEach(c=>{ chests[c.name]=row.c[c.col]?cellNum(row.c[c.col]):0; });
+		PREMIUM_CHEST_COLS.forEach(c=>{ chests[c.name]=row.c[c.col]?cellNum(row.c[c.col]):0; });
+		if(pts>0||Object.values(chests).some(v=>v>0)) players.push({name,pts,chests});
+	}
+	return players;
+}
+
+// ── Log data ─────────────────────────────────────────────────────
+// Chest type label in log -> point value mapping (same as CHEST_COLS)
+const LOG_TYPE_PTS = {};
+CHEST_COLS.forEach(c => { LOG_TYPE_PTS[c.name] = c.pts; });
+
+function parseGvizDate(cell){
+	// gviz returns dates as string "Date(yyyy,m,d,h,min,s)" (month is 0-indexed)
+	// or as a formatted string in cell.f like "5/28/2026 9:17:33"
+	if(!cell || cell.v == null) return null;
+	if(typeof cell.v === 'string'){
+		const dm = cell.v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
+		if(dm) return new Date(+dm[1], +dm[2], +dm[3], +dm[4], +dm[5], +dm[6]);
+		const d = new Date(cell.v.replace(' ','T'));
+		if(!isNaN(d)) return d;
+	}
+	// Try formatted value
+	if(cell.f){
+		const d = new Date(cell.f.replace(' ','T'));
+		if(!isNaN(d)) return d;
+		const d2 = new Date(cell.f);
+		if(!isNaN(d2)) return d2;
+	}
+	return null;
+}
+
+function parseLogEvents(table){
+	const rows = table.rows;
+	const events = [];
+	// Confirmed column layout from debug:
+	// col 1 = OCR Name, col 2 = OCR type, col 4 = Time collected (raw), col 5 = Calculated Time
+	// col 6 = NAME (clean), col 7 = TYPE (clean)
+	// Use col 5 (Calculated Time) as timestamp — it's the validated one
+	// Fall back to col 4 (Time collected) if col 5 is missing
+	const SKIP = new Set(['---','','NAME','TYPE','OCR Name','OCR type']);
+	for(let i=0; i<rows.length; i++){
+		const row = rows[i];
+		if(!row || !row.c) continue;
+		const nameCell = row.c[6];
+		const typeCell = row.c[7];
+		if(!nameCell||!nameCell.v||!typeCell||!typeCell.v) continue;
+		const name = String(nameCell.v).trim();
+		const type = String(typeCell.v).trim();
+		if(SKIP.has(name)||SKIP.has(type)) continue;
+		// Try col 5 (Calculated Time) first, fall back to col 4 (Time collected)
+		let ts = parseGvizDate(row.c[5]);
+		if(!ts) ts = parseGvizDate(row.c[4]);
+		if(!ts || isNaN(ts)) continue;
+		const pts = LOG_TYPE_PTS[type] || 0;
+		events.push({ts, name, type, pts});
+	}
+	events.sort((a,b) => a.ts - b.ts);
+	return events;
+}
+
+async function loadArchiveData(){
+	// Load every archived cycle in parallel
+	const results = await Promise.all(ARCHIVE_SHEETS.map(async function(sheet){
+		try{
+			const url=`https://docs.google.com/spreadsheets/d/${sheet.id}/gviz/tq?tqx=out:json&gid=${sheet.gid}&t=${Date.now()}`;
+			const res=await fetch(url);
+			if(!res.ok) return null;
+			const data=parseGvizResponse(await res.text());
+			const lc=data.table.rows[0]?.c?.[2];
+			const label=(lc&&lc.v)?String(lc.v).trim():'Cycle';
+			const days=parseCycleDays(label,true);
+			const players=buildPlayers(data.table);
+			return {label:label, days:days, players:players};
+		}catch(e){ return null; }
+	}));
+	allArchives = results.filter(function(r){return r && r.players.length;});
+	if(allArchives.length){
+		selectedArchiveIdx = 0;
+		const a = allArchives[0];
+		archivePlayers = a.players;
+		archiveCycleLabel = a.label;
+		archiveCycleDays = a.days;
+	}
+}
+
+async function loadLogData(){
+	const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${LOG_GID}&t=${Date.now()}`;
+	try{
+		const res = await fetch(url);
+		if(!res.ok){ console.warn('Log HTTP error', res.status); return; }
+		const raw = await res.text();
+		const data = parseGvizResponse(raw);
+		const table = data.table;
+
+		logEvents = parseLogEvents(table);
+	}catch(e){ console.warn('Log fetch failed:', e); }
+}
+
+async function loadData(silent=false){
+	if(!silent) setStatus('yellow','Fetching live data...');
+	const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&t=${Date.now()}`;
+	try{
+		const res=await fetch(url);
+		if(!res.ok) throw new Error('HTTP '+res.status);
+		const data=parseGvizResponse(await res.text());
+		allPlayers=buildPlayers(data.table);
+		currentCycleLabel=extractCycleLabel(data.table);
+		currentCycleDays=parseCycleDays(currentCycleLabel,false);
+		if(allPlayers.length===0) throw new Error('No player rows found');
+		await Promise.all([loadLogData(),loadArchiveData()]);
+		setStatus('green',`Live — ${allPlayers.length} players · ${logEvents.length} log events · updated ${new Date().toLocaleTimeString()}`);
+		document.getElementById('last-updated').textContent=`Last refreshed: ${new Date().toLocaleTimeString()} · ${allPlayers.length} players`;
+		document.getElementById('auto-badge').className='auto-badge live';
+		renderAll(silent);
+	}catch(e){
+		setStatus('red','Fetch failed: '+e.message+' — check sheet is "Anyone with link can view"');
+		document.getElementById('last-updated').textContent='Fetch failed';
+	}
+}
+
+function setStatus(color,text){
+	const colors={green:'#639922',yellow:'#EF9F27',red:'#E24B4A'};
+	const dot=document.getElementById('status-dot');
+	dot.style.background=colors[color];
+	dot.className='dot'+(color==='green'?' dot-pulse':'');
+	document.getElementById('status-text').textContent=text;
+}
+
+// ── Auto-refresh ──────────────────────────────────────────────────
+function startAutoRefresh(){
+	clearInterval(countdownTimer);
+	clearTimeout(autoRefreshTimer);
+	secondsLeft=AUTO_REFRESH_SECS;
+	updateCountdown();
+	countdownTimer=setInterval(()=>{
+		secondsLeft--;
+		updateCountdown();
+		if(secondsLeft<=0){
+			secondsLeft=AUTO_REFRESH_SECS;
+			loadData(true);
+		}
+	},1000);
+}
+
+function updateCountdown(){
+	const el=document.getElementById('countdown');
+	if(el) el.textContent=secondsLeft;
+}
+
+function manualRefresh(){
+	secondsLeft=AUTO_REFRESH_SECS;
+	loadData(false);
+}
+
+// ── ECharts helpers ───────────────────────────────────────────────
+function getOrCreateChart(id){
+	const el=document.getElementById(id);
+	if(!el) return null;
+	if(ecInstances[id]){ ecInstances[id].dispose(); }
+	ecInstances[id]=echarts.init(el, 'dark', {renderer:'canvas', backgroundColor:'transparent'});
+	return ecInstances[id];
+}
+
+const TOOLTIP_STYLE = ()=>({
+	backgroundColor: EC_TOOLTIP(),
+	borderColor: isDark()?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.1)',
+	borderWidth:1,
+	textStyle:{color:EC_TEXT2(),fontFamily:'DM Sans, sans-serif',fontSize:13}
+});
+const CHART_BG = '#000000';
+
+// ── Render all tabs ───────────────────────────────────────────────
+function renderAll(silent=false){
+	const interactive = ['leaderboard','compare','activity','history'];
+	const skipTab = silent && (interactive.includes(activeTab) || currentProfileName);
+	renderOverview();
+	if(!skipTab) renderLeaderboard();
+	renderContest();
+	renderChests();
+	if(!skipTab) renderCompare();
+	renderActivity();
+	renderHistory();
+	renderPremium();
+}
+
+// ── Participation & streak helpers ───────────────────────────────
+function getParticipationStats(){
+	const now = Date.now();
+	const windows = {h24: 24*3600*1000, h48: 48*3600*1000, d7: 7*24*3600*1000};
+	// Get unique players active in each window from log
+	const active24 = new Set(logEvents.filter(e=>now-e.ts<=windows.h24).map(e=>e.name));
+	const active48 = new Set(logEvents.filter(e=>now-e.ts<=windows.h48).map(e=>e.name));
+	const active7d  = new Set(logEvents.filter(e=>now-e.ts<=windows.d7).map(e=>e.name));
+	const total = allPlayers.length;
+	return {
+		active24: active24.size, active48: active48.size, active7d: active7d.size,
+		pct24: Math.round(active24.size/total*100),
+		pct48: Math.round(active48.size/total*100),
+		pct7d:  Math.round(active7d.size/total*100),
+		total,
+		active24set: active24, active48set: active48, active7dset: active7d
+	};
+}
+
+function getPlayerStreaks(){
+	if(!logEvents.length) return {streaks:[], inactive:[]};
+	const now = new Date();
+	// For each player, find their last activity timestamp and daily activity buckets
+	const playerDays = {};
+	logEvents.forEach(e=>{
+		const day = e.ts.toISOString().slice(0,10); // YYYY-MM-DD
+		if(!playerDays[e.name]) playerDays[e.name]={days:new Set(),lastSeen:e.ts};
+		playerDays[e.name].days.add(day);
+		if(e.ts > playerDays[e.name].lastSeen) playerDays[e.name].lastSeen = e.ts;
+	});
+
+	// Compute consecutive day streak (working backwards from today)
+	const streaks = allPlayers.map(p=>{
+		const data = playerDays[p.name];
+		if(!data) return {name:p.name, streak:0, lastSeen:null, hoursAgo:null};
+		// Count consecutive days ending today or yesterday
+		let streak = 0;
+		const d = new Date(now);
+		for(let i=0; i<28; i++){
+			const dayStr = d.toISOString().slice(0,10);
+			if(data.days.has(dayStr)) streak++;
+			else if(i>0) break; // gap — stop counting
+			d.setDate(d.getDate()-1);
+		}
+		const hoursAgo = Math.round((now-data.lastSeen)/3600000);
+		return {name:p.name, streak, lastSeen:data.lastSeen, hoursAgo, pts:p.pts};
+	});
+
+	// Hot streaks: active today AND streak >= 2 days
+	const hotStreaks = streaks
+		.filter(s=>s.streak>=2)
+		.sort((a,b)=>b.streak-a.streak)
+		.slice(0,10);
+
+	// Inactive: players in allPlayers with no log activity in last 48h
+	const inactive = streaks
+		.filter(s=>s.hoursAgo===null||s.hoursAgo>48)
+		.sort((a,b)=>{
+			// null (never seen) first, then by hours desc
+			if(a.hoursAgo===null&&b.hoursAgo===null) return b.pts-a.pts;
+			if(a.hoursAgo===null) return -1;
+			if(b.hoursAgo===null) return 1;
+			return b.hoursAgo-a.hoursAgo;
+		})
+		.slice(0,10);
+
+	return {hotStreaks, inactive, allStreaks:streaks};
+}
+
+function getPtsLast24h(playerName){
+	const cutoff = new Date(Date.now()-24*3600*1000);
+		var aliases=getPlayerAliases(playerName);
+	return logEvents.filter(e=>aliases.indexOf(e.name)>=0&&e.ts>=cutoff).reduce(function(s,e){return s+e.pts;},0);
+}
+
+// ── ACTIVITY TAB ─────────────────────────────────────────────────
+function getLogWindow(hours){
+	const cutoff = new Date(Date.now() - hours*60*60*1000);
+	return logEvents.filter(e => e.ts >= cutoff);
+}
+
+function renderActivity(){
+	const el = document.getElementById('tab-activity');
+	if(!el) return;
+
+	if(logEvents.length === 0){
+		el.innerHTML = '<div class="card" style="text-align:center;padding:2rem;color:var(--tx2)">No log data available yet.</div>';
+		return;
+	}
+
+	el.innerHTML = `
+		<div class="metrics" style="margin-bottom:clamp(10px,1.5vw,16px)">
+			<div class="metric"><div class="label">Log entries</div><div class="val">${logEvents.length.toLocaleString()}</div><div class="sub">total recorded</div></div>
+			<div class="metric"><div class="label">Last 24h</div><div class="val" id="act-24h">—</div><div class="sub">chests logged</div></div>
+			<div class="metric"><div class="label">Last 7d</div><div class="val" id="act-7d">—</div><div class="sub">chests logged</div></div>
+		</div>
+		<div class="card">
+			<h3>Clan activity — chests per hour (last 24h)</h3>
+			<div id="ec-act-hourly" class="ec-chart" style="height:clamp(180px,22vw,260px)"></div>
+		</div>
+		<div class="charts-row">
+			<div class="card" style="margin-bottom:0">
+				<h3>Top earners — last 24h</h3>
+				<div id="ec-act-top24" class="ec-chart" style="height:clamp(200px,24vw,300px)"></div>
+			</div>
+			<div class="card" style="margin-bottom:0">
+				<h3>Top earners — last 7 days</h3>
+				<div id="ec-act-top7d" class="ec-chart" style="height:clamp(200px,24vw,300px)"></div>
+			</div>
+		</div>
+		`;
+
+	requestAnimationFrame(()=>{
+		const events24h = getLogWindow(24);
+		const events7d  = getLogWindow(24*7);
+
+		// Update metric counters — guard against null in case DOM not ready
+		const el24h = document.getElementById('act-24h');
+		const el7d  = document.getElementById('act-7d');
+		const elPart = document.getElementById('act-part');
+		if(el24h) el24h.textContent = events24h.length.toLocaleString();
+		if(el7d)  el7d.textContent  = events7d.length.toLocaleString();
+
+		// Participation
+		const part = getParticipationStats();
+		if(elPart) elPart.textContent = part.active24+'/'+part.total;
+
+		// Streaks panel
+		const {hotStreaks, inactive} = getPlayerStreaks();
+		const streakEl = document.getElementById('act-streaks');
+		if(streakEl){
+			if(hotStreaks.length){
+				const rows = hotStreaks.map(s=>{
+					const pts24 = getPtsLast24h(s.name);
+					const esc = s.name.replace(/'/g,"\\'");
+					return '<li>'
+						+'<span class="sname" onclick="openProfileFromContest(\''+esc+'\')">'+s.name+'</span>'
+						+'<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'
+						+(pts24>0?'<span style="font-size:var(--fs-xs);font-family:var(--mono);color:#2d5a0e">+'+pts24.toLocaleString()+'</span>':'')
+						+'<span class="status-pill pill-streak">'+s.streak+'d streak</span>'
+						+'</div></li>';
+				}).join('');
+				streakEl.innerHTML = '<div class="overview-section-title">🔥 Hot streaks</div><ul class="status-list">'+rows+'</ul>';
+			} else {
+				streakEl.innerHTML = '<div class="overview-section-title">🔥 Hot streaks</div><div style="color:var(--tx2);font-size:var(--fs-sm);padding:8px 0">No multi-day streaks yet</div>';
+			}
+		}
+
+		// Inactive panel
+		const inactiveEl = document.getElementById('act-inactive');
+		if(inactiveEl && inactive.length){
+			const rows = inactive.map(s=>{
+				const label = s.hoursAgo===null ? 'No activity logged' : s.hoursAgo<72 ? s.hoursAgo+'h ago' : Math.floor(s.hoursAgo/24)+'d ago';
+				const pillCls = s.hoursAgo===null||s.hoursAgo>96 ? 'pill-inactive' : 'pill-idle';
+				const esc = s.name.replace(/'/g,"\\'");
+				return '<li><span class="sname" onclick="openProfileFromContest(\''+esc+'\')">'+s.name+'</span>'
+					+'<span class="status-pill '+pillCls+'">'+label+'</span></li>';
+			}).join('');
+			inactiveEl.innerHTML = '<div class="overview-section-title">😴 Inactive 48h+</div><ul class="status-list">'+rows+'</ul>';
+		}
+
+		// Hourly activity chart (last 24h)
+		const now = new Date();
+		const hourLabels = [];
+		const hourCounts = [];
+		for(let h=23; h>=0; h--){
+			const start = new Date(now - h*3600000);
+			const end   = new Date(now - (h-1)*3600000);
+			const label = start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+			hourLabels.push(label);
+			hourCounts.push(logEvents.filter(e=>e.ts>=start&&e.ts<end).length);
+		}
+		const ch = getOrCreateChart('ec-act-hourly');
+		if(ch) ch.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/><b>${p[0].value}</b> chests`},
+			grid:{left:8,right:16,top:8,bottom:50,containLabel:true},
+			xAxis:{type:'category',data:hourLabels,axisLabel:{color:EC_TEXT(),fontSize:9,rotate:45,interval:2},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:10},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',data:hourCounts.map(v=>({value:v,itemStyle:{color:'#185FA5',borderRadius:[3,3,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
+		});
+
+		// Top earners last 24h (by points)
+		const pts24 = {};
+		events24h.forEach(e=>{ pts24[e.name]=(pts24[e.name]||0)+e.pts; });
+		const top24 = Object.entries(pts24).sort((a,b)=>b[1]-a[1]).slice(0,10);
+		const c24 = getOrCreateChart('ec-act-top24');
+		if(c24 && top24.length) c24.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
+			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
+			xAxis:{type:'category',data:top24.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',data:top24.map((x,i)=>({value:x[1],itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#1D9E75',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
+		});
+		else if(c24) c24.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 24h',fill:EC_TEXT(),fontSize:14}}]});
+
+		// Top earners last 7d
+		const pts7d = {};
+		events7d.forEach(e=>{ pts7d[e.name]=(pts7d[e.name]||0)+e.pts; });
+		const top7d = Object.entries(pts7d).sort((a,b)=>b[1]-a[1]).slice(0,10);
+		const c7d = getOrCreateChart('ec-act-top7d');
+		if(c7d && top7d.length) c7d.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
+			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
+			xAxis:{type:'category',data:top7d.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',data:top7d.map((x,i)=>({value:x[1],itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#D4537E',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
+		});
+		else if(c7d) c7d.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 7 days',fill:EC_TEXT(),fontSize:14}}]});
+
+	});
+}
+
+function renderCompare(){
+	const names=allPlayers.map(p=>p.name).sort((a,b)=>a.localeCompare(b));
+	const opts=names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
+	const sorted=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
+	const defA=sorted[0]?.name||'';
+	const defB=sorted[1]?.name||'';
+	document.getElementById('tab-compare').innerHTML=`
+		<div class="card">
+			<div class="compare-header">
+				<span style="font-size:var(--fs-sm);font-weight:600;color:var(--tx2)">Compare</span>
+				<div class="compare-player-label"><span class="compare-dot" style="background:#185FA5"></span>
+					<select class="compare-select" id="cmp-a" onchange="updateCompare()">
+						<option value="">Select player A…</option>${opts}
+					</select>
+				</div>
+				<span style="color:var(--tx2);font-size:var(--fs-sm)">vs</span>
+				<div class="compare-player-label"><span class="compare-dot" style="background:#D4537E"></span>
+					<select class="compare-select" id="cmp-b" onchange="updateCompare()">
+						<option value="">Select player B…</option>${opts}
+					</select>
+				</div>
+			</div>
+			<div id="cmp-body" style="color:var(--tx2);font-size:var(--fs-sm);padding:20px 0;text-align:center">Select two players above to compare</div>
+		</div>
+		<div class="charts-row" id="cmp-charts" style="display:none">
+			<div class="card" style="margin-bottom:0"><h3>Score breakdown by category</h3><div id="ec-cmp-radar" class="ec-chart" style="height:clamp(240px,30vw,340px)"></div></div>
+			<div class="card" style="margin-bottom:0"><h3>Points distribution</h3><div id="ec-cmp-bar" class="ec-chart" style="height:clamp(240px,30vw,340px)"></div></div>
+		</div>`;
+	// Pre-select defaults
+	if(defA) document.getElementById('cmp-a').value=defA;
+	if(defB) document.getElementById('cmp-b').value=defB;
+	if(defA&&defB) updateCompare();
+}
+
+function updateCompare(){
+	const nameA=document.getElementById('cmp-a')?.value;
+	const nameB=document.getElementById('cmp-b')?.value;
+	if(!nameA||!nameB||nameA===nameB){
+		document.getElementById('cmp-body').style.display='block';
+		document.getElementById('cmp-body').textContent=nameA===nameB?'Select two different players':'Select two players above to compare';
+		document.getElementById('cmp-charts').style.display='none';
+		return;
+	}
+	const pA=allPlayers.find(p=>p.name===nameA);
+	const pB=allPlayers.find(p=>p.name===nameB);
+	if(!pA||!pB) return;
+
+	const sortedAll=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
+	const avg=Math.round(allPlayers.reduce((s,p)=>s+p.pts,0)/allPlayers.length);
+	const rankA=sortedAll.findIndex(p=>p.name===nameA)+1;
+	const rankB=sortedAll.findIndex(p=>p.name===nameB)+1;
+	const epicA=epicScore(pA), epicB=epicScore(pB);
+
+	// Summary row
+	const statRows=[
+		{label:'Total points', a:pA.pts, b:pB.pts},
+		{label:'Rank', a:rankA, b:rankB, lowerBetter:true},
+		{label:'vs clan avg', a:pA.pts-avg, b:pB.pts-avg},
+		{label:'Epic Monster chests', a:epicA, b:epicB},
+		...GROUP_NAMES.map(g=>({
+			label:g,
+			a:CHEST_COLS.filter(c=>c.group===g).reduce((s,c)=>s+(pA.chests[c.name]||0)*c.pts,0),
+			b:CHEST_COLS.filter(c=>c.group===g).reduce((s,c)=>s+(pB.chests[c.name]||0)*c.pts,0)
+		}))
+	];
+
+	const barRows=statRows.map(r=>{
+		const max=Math.max(Math.abs(r.a),Math.abs(r.b),1);
+		const wA=Math.round(Math.abs(r.a)/max*100);
+		const wB=Math.round(Math.abs(r.b)/max*100);
+		const aWin=r.lowerBetter?r.a<r.b:r.a>r.b;
+		const bWin=r.lowerBetter?r.b<r.a:r.b>r.a;
+		const fmtA=typeof r.a==='number'&&r.a>999?r.a.toLocaleString():r.a;
+		const fmtB=typeof r.b==='number'&&r.b>999?r.b.toLocaleString():r.b;
+		return`<div class="compare-bar">
+			<span class="compare-bar-label">${r.label}</span>
+			<div class="compare-bar-wrap">
+				<div class="compare-bar-a" style="width:${wA}%;background:${aWin?'#185FA5':'rgba(24,95,165,0.35)'}"></div>
+				<div class="compare-bar-b" style="width:${wB}%;background:${bWin?'#D4537E':'rgba(212,83,126,0.35)'}"></div>
+			</div>
+			<span class="compare-vals" style="color:#185FA5">${fmtA}</span>
+			<span class="compare-vals" style="color:#D4537E">${fmtB}</span>
+		</div>`;
+	}).join('');
+
+	document.getElementById('cmp-body').style.display='none';
+	document.getElementById('cmp-charts').style.display='grid';
+
+	// First insert stat bars into card above charts
+	const card=document.querySelector('#tab-compare .card');
+	let existing=document.getElementById('cmp-stat-bars');
+	if(!existing){existing=document.createElement('div');existing.id='cmp-stat-bars';card.appendChild(existing);}
+	existing.innerHTML=barRows;
+
+	// Radar chart
+	requestAnimationFrame(()=>{
+		const groupPtsA=GROUP_NAMES.map(g=>CHEST_COLS.filter(c=>c.group===g).reduce((s,c)=>s+(pA.chests[c.name]||0)*c.pts,0));
+		const groupPtsB=GROUP_NAMES.map(g=>CHEST_COLS.filter(c=>c.group===g).reduce((s,c)=>s+(pB.chests[c.name]||0)*c.pts,0));
+		const maxG=GROUP_NAMES.map((_,i)=>Math.max(groupPtsA[i],groupPtsB[i],1));
+
+		const cr=getOrCreateChart('ec-cmp-radar');
+		if(cr) cr.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'item'},
+			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxG[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:10},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'radar',data:[
+				{name:nameA,value:groupPtsA,areaStyle:{color:'rgba(24,95,165,0.2)'},lineStyle:{color:'#185FA5',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#185FA5'}},
+				{name:nameB,value:groupPtsB,areaStyle:{color:'rgba(212,83,126,0.2)'},lineStyle:{color:'#D4537E',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#D4537E'}}
+			]}]
+		});
+
+		// Side-by-side bar
+		const cb=getOrCreateChart('ec-cmp-bar');
+		if(cb) cb.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'}},
+			legend:{top:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10,data:[{name:nameA,itemStyle:{color:'#185FA5'}},{name:nameB,itemStyle:{color:'#D4537E'}}]},
+			grid:{left:8,right:8,top:40,bottom:60,containLabel:true},
+			xAxis:{type:'category',data:GROUP_NAMES,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:25,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[
+				{name:nameA,type:'bar',data:groupPtsA,itemStyle:{color:'#185FA5',borderRadius:[3,3,0,0]},barMaxWidth:28},
+				{name:nameB,type:'bar',data:groupPtsB,itemStyle:{color:'#D4537E',borderRadius:[3,3,0,0]},barMaxWidth:28}
+			]
+		});
+	});
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────
+function renderOverview(){
+	const sorted=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
+	const total=allPlayers.reduce((s,p)=>s+p.pts,0);
+	const avg=Math.round(total/allPlayers.length);
+	const above=allPlayers.filter(p=>p.pts>=avg).length;
+	const top10=sorted.slice(0,10);
+
+	const groupTotals=CHEST_GROUPS.map(g=>({
+		label:g.label,
+		total:allPlayers.reduce((s,p)=>s+g.cols.reduce((ss,c)=>ss+(p.chests[c.name]||0),0),0),
+		color:g.color
+	})).sort((a,b)=>b.total-a.total);
+
+	// Build dynamic buckets based on actual score range
+	const maxScore = Math.max(...allPlayers.map(p=>p.pts));
+	const step = maxScore <= 20000 ? 2000 : maxScore <= 50000 ? 5000 : maxScore <= 100000 ? 10000 : 20000;
+	const numBuckets = 8;
+	const buckets = Array.from({length:numBuckets+1},(_,i)=>i*step);
+	buckets[numBuckets] = Infinity;
+	const bLabels = Array.from({length:numBuckets},(_,i)=>{
+		const lo = i*step, hi = (i+1)*step;
+		const fmt = v => v>=1000?(v/1000)+'k':v;
+		return i===numBuckets-1 ? fmt(lo)+'+' : fmt(lo)+'–'+fmt(hi);
+	});
+	const bCounts=bLabels.map((_,i)=>allPlayers.filter(p=>p.pts>=buckets[i]&&p.pts<buckets[i+1]).length);
+
+	document.getElementById('tab-overview').innerHTML=`
+		<div class="metrics">
+			<div class="metric"><div class="label">Clan total</div><div class="val" id="mc-total">0</div><div class="sub">points this cycle</div></div>
+			<div class="metric"><div class="label">Active players</div><div class="val" id="mc-players">0</div><div class="sub">in this sheet</div></div>
+			<div class="metric"><div class="label">Average score</div><div class="val" id="mc-avg">0</div><div class="sub">per player</div></div>
+			<div class="metric"><div class="label">Above average</div><div class="val" id="mc-above">0</div><div class="sub">${Math.round(above/allPlayers.length*100)}% of players</div></div>
+		</div>
+		<div class="charts-row">
+			<div class="card"><h3>Top 10 players by points</h3><div id="ec-top10" class="ec-chart" style="height:clamp(220px,28vw,320px)"></div></div>
+			<div class="card"><h3>Chest category breakdown</h3><div id="ec-donut" class="ec-chart" style="height:clamp(220px,28vw,320px)"></div></div>
+		</div>
+		<div class="card"><h3>Score distribution — all players</h3><div id="ec-dist" class="ec-chart" style="height:clamp(160px,20vw,240px)"></div></div>`;
+
+	// Animate metric counters
+	[['mc-total',total],['mc-players',allPlayers.length],['mc-avg',avg],['mc-above',above]].forEach(([id,target])=>{
+		const el=document.getElementById(id); if(!el) return;
+		const dur=1000, fps=60, frames=Math.round(dur/(1000/fps));
+		let frame=0;
+		const tick=()=>{
+			frame++;
+			const prog=frame/frames;
+			const ease=1-Math.pow(1-prog,3); // ease-out cubic
+			el.textContent=Math.round(target*ease).toLocaleString();
+			if(frame<frames) requestAnimationFrame(tick);
+			else el.textContent=target.toLocaleString();
+		};
+		requestAnimationFrame(tick);
+	});
+
+	// Top 10 bar
+	requestAnimationFrame(()=>{
+		const c1=getOrCreateChart('ec-top10');
+		if(c1) c1.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
+			grid:{left:8,right:16,top:8,bottom:60,containLabel:true},
+			xAxis:{type:'category',data:top10.map(p=>p.name),axisLabel:{color:EC_TEXT(),fontSize:11,rotate:30,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:11,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',data:top10.map((p,i)=>({value:p.pts,itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#185FA5',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.85}}}]
+		});
+
+		// Donut
+		const c2=getOrCreateChart('ec-donut');
+		if(c2) c2.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'item',formatter:p=>`${p.name}<br/><b>${p.value.toLocaleString()}</b> chests (${p.percent.toFixed(1)}%)`},
+			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			series:[{type:'pie',radius:['42%','72%'],center:['38%','50%'],avoidLabelOverlap:true,
+				label:{show:false},
+				emphasis:{label:{show:true,fontSize:13,fontWeight:600,color:EC_TEXT2()}},
+				data:groupTotals.map(g=>({name:g.label,value:g.total,itemStyle:{color:g.color}}))}]
+		});
+
+		// Distribution bar
+		const c3=getOrCreateChart('ec-dist');
+		if(c3) c3.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/><b>${p[0].value}</b> players`},
+			grid:{left:8,right:16,top:8,bottom:40,containLabel:true},
+			xAxis:{type:'category',data:bLabels,axisLabel:{color:EC_TEXT(),fontSize:11},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
+			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:11},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',data:bCounts.map(v=>({value:v,itemStyle:{color:'#7F77DD',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
+		});
+	});
+}
+
+function renderOverviewHealth(){
+	const part = getParticipationStats();
+	const {hotStreaks, inactive} = getPlayerStreaks();
+
+	// Participation panel
+	const pEl = document.getElementById('overview-participation');
+	if(pEl){
+		const gaugeColor = part.pct24>=80?'#639922':part.pct24>=50?'#EF9F27':'#E24B4A';
+		pEl.innerHTML = '<div class="overview-section-title">Clan participation</div>'
+			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">24h</span>'
+			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct24+'%;background:'+gaugeColor+'"></div></div>'
+			+'<span class="gauge-label">'+part.active24+'/'+part.total+'</span></div>'
+			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">48h</span>'
+			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct48+'%;background:#185FA5"></div></div>'
+			+'<span class="gauge-label">'+part.active48+'/'+part.total+'</span></div>'
+			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">7d</span>'
+			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct7d+'%;background:#7F77DD"></div></div>'
+			+'<span class="gauge-label">'+part.active7d+'/'+part.total+'</span></div>'
+			+'<div style="margin-top:10px;font-size:var(--fs-xs);color:var(--tx2)">'
+			+'<span style="color:'+gaugeColor+';font-weight:600">'+part.pct24+'%</span> of clan active in last 24h'
+			+(part.pct24<50?' <span class="status-pill pill-inactive">Low activity</span>':part.pct24<80?' <span class="status-pill pill-idle">Moderate</span>':'<span class="status-pill pill-hot">Strong</span>')
+			+'</div>';
+	}
+
+	// Inactivity panel
+	const iEl = document.getElementById('overview-inactivity');
+	if(iEl && inactive.length){
+		const rows = inactive.slice(0,8).map(s=>{
+			const label = s.hoursAgo===null ? 'No log data' : s.hoursAgo<72 ? s.hoursAgo+'h ago' : Math.floor(s.hoursAgo/24)+'d ago';
+			const pillCls = s.hoursAgo===null||s.hoursAgo>96 ? 'pill-inactive' : 'pill-idle';
+			const esc = s.name.replace(/'/g, "\\'");
+			return '<li><span class="sname" onclick="openProfileFromContest(\''+esc+'\')">'+s.name+'</span>'
+				+'<span class="status-pill '+pillCls+'">'+label+'</span></li>';
+		}).join('');
+		iEl.innerHTML = '<div class="overview-section-title">Inactive players <span style="font-weight:400;letter-spacing:0">— last 48h+</span></div>'
+			+'<ul class="status-list">'+rows+'</ul>';
+	}
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────
+function getSortedPlayers(){
+	const byRank=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
+	const avg=Math.round(byRank.reduce((s,p)=>s+p.pts,0)/byRank.length);
+	const withMeta=byRank.map((p,i)=>({...p,rank:i+1,diff:p.pts-avg,epic:epicScore(p)}));
+	const {col,dir}=lbSort;
+	const mul=dir==='asc'?1:-1;
+	if(col==='rank')  return dir==='asc'?withMeta:withMeta.slice().reverse();
+	if(col==='name')  return withMeta.slice().sort((a,b)=>mul*a.name.localeCompare(b.name));
+	if(col==='pts')   return withMeta.slice().sort((a,b)=>mul*(a.pts-b.pts));
+	if(col==='epic')  return withMeta.slice().sort((a,b)=>mul*(a.epic-b.epic));
+	if(col==='diff')  return withMeta.slice().sort((a,b)=>mul*(a.diff-b.diff));
+	return withMeta;
+}
+
+function setHistSort(col){
+	if(histSort.col===col) histSort.dir=histSort.dir==='asc'?'desc':'asc';
+	else{histSort.col=col;histSort.dir=col==='name'?'asc':'desc';}
+	renderHistory();
+}
+
+function parseCycleDays(label,isArchive){
+	if(!label) return null;
+	var MONTHS={January:0,February:1,March:2,April:3,May:4,June:5,July:6,August:7,September:8,October:9,November:10,December:11};
+	// Find all month names in the label (may have 1 or 2 — e.g. "May 25-June 7")
+	var monthNames=label.match(/January|February|March|April|May|June|July|August|September|October|November|December/g)||[];
+	if(!monthNames.length) return null;
+	var startMonth=MONTHS[monthNames[0]];
+	var endMonth=monthNames.length>1?MONTHS[monthNames[1]]:startMonth;
+	var nums=label.match(/\d+/g)||[];
+	var yr=new Date().getFullYear();
+	if(isArchive&&nums.length>=2){
+		var startDay=parseInt(nums[0]),endDay=parseInt(nums[1]);
+		// Build real dates so cross-month spans calculate correctly
+		var sy=yr, ey=yr;
+		// If end month is before start month, the cycle crossed into next year
+		if(endMonth<startMonth) ey=yr+1;
+		var startDate=new Date(sy,startMonth,startDay);
+		var endDate=new Date(ey,endMonth,endDay);
+		var d=Math.round((endDate-startDate)/864e5)+1;
+		return d>0?d:null;
+	}
+	if(!isArchive&&nums.length>=1){
+		var st=new Date(yr,startMonth,parseInt(nums[0]));
+		if(st>new Date()) st=new Date(yr-1,startMonth,parseInt(nums[0]));
+		var diff=Math.max(Math.floor((new Date()-st)/864e5)+1,1);
+		return diff;
+	}
+	return null;
+}
+
+function extractCycleLabel(table){
+	var monthRe=/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+	// Scan rows 0-2 for any cell containing a month name
+	for(var ri=0;ri<Math.min(3,table.rows.length);ri++){
+		var row=table.rows[ri];if(!row||!row.c)continue;
+		for(var ci=0;ci<row.c.length;ci++){
+			var cell=row.c[ci];
+			if(cell&&cell.v&&typeof cell.v==='string'&&monthRe.test(cell.v)){
+				return cell.v.trim();
+			}
+		}
+	}
+	// Fallback: check table.cols labels
+	for(var i=0;i<table.cols.length;i++){
+		var lbl=(table.cols[i].label||'').trim();
+		if(lbl&&monthRe.test(lbl)){return lbl;}
+	}
+	return '';
+}
+function setSort(col){
+	if(lbSort.col===col) lbSort.dir=lbSort.dir==='asc'?'desc':'asc';
+	else{ lbSort.col=col; lbSort.dir=col==='name'?'asc':'desc'; }
+	renderLeaderboard();
+}
+
+function thClass(col){ return lbSort.col===col?'sortable sort-'+lbSort.dir:'sortable'; }
+
+function renderLeaderboard(){
+	const avg=Math.round(allPlayers.reduce((s,p)=>s+p.pts,0)/allPlayers.length);
+	const sorted=getSortedPlayers();
+	const maxPts=Math.max(...allPlayers.map(p=>p.pts));
+	const rows=sorted.map(p=>{
+		const pct=Math.round(p.pts/maxPts*100);
+		const sign=p.diff>=0?'+':'';
+		const cls=p.diff>=0?'above':'below';
+		const rc=p.rank===1?'rank-1':p.rank===2?'rank-2':p.rank===3?'rank-3':'rank-other';
+		const esc=p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+		return`<tr class="clickable" onclick="openProfile('${esc}')">
+			<td style="width:36px"><span class="rank-badge ${rc}">${p.rank}</span></td>
+			<td class="lb-col-name" style="font-weight:500;min-width:80px">${p.name} <i class="ti ti-chevron-right" style="font-size:10px;color:var(--tx2)" aria-hidden="true"></i></td>
+			<td style="text-align:right;font-weight:500;white-space:nowrap">${p.pts.toLocaleString()}</td>
+			<td class="lb-col-epic" style="text-align:right;font-family:var(--mono)">${p.epic}</td>
+			<td class="lb-col-bar lb-col-rel" style="width:100px"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:#185FA5"></div></div></td>
+			<td class="lb-col-diff" style="text-align:right;white-space:nowrap"><span class="diff-badge ${cls}">${sign}${p.diff.toLocaleString()}</span></td>
+		</tr>`;
+	}).join('');
+	document.getElementById('tab-leaderboard').innerHTML=`
+		<div class="card">
+			<div class="filter-row">
+				<input type="text" id="lb-search" placeholder="Search player…" oninput="filterLB()" />
+				<span class="filter-hint">Click row for profile · Click headers to sort · vs avg (${avg.toLocaleString()} pts)</span>
+			</div>
+			<div class="tbl-scroll">
+				<table class="player-table">
+					<thead><tr>
+						<th class="${thClass('rank')}" onclick="setSort('rank')" style="width:36px"># <span class="sort-icon"></span></th>
+						<th class="${thClass('name')} lb-col-name" onclick="setSort('name')">Player <span class="sort-icon"></span></th>
+						<th class="${thClass('pts')}" onclick="setSort('pts')" style="text-align:right">Points <span class="sort-icon"></span></th>
+						<th class="${thClass('epic')} lb-col-epic" onclick="setSort('epic')" style="text-align:right">Epic Monster <span class="sort-icon"></span></th>
+						<th class="lb-col-bar lb-col-rel" style="width:100px">Relative</th>
+						<th class="${thClass('diff')} lb-col-diff" onclick="setSort('diff')" style="text-align:right">vs avg <span class="sort-icon"></span></th>
+					</tr></thead>
+					<tbody id="lb-body">${rows}</tbody>
+				</table>
+			</div>
+		</div>`;
+}
+
+function filterLB(){
+	const q=document.getElementById('lb-search').value.toLowerCase();
+	document.querySelectorAll('#lb-body tr').forEach(r=>{
+		const n=r.querySelector('td:nth-child(2)')?.textContent?.toLowerCase()||'';
+		r.style.display=n.includes(q)?'':'none';
+	});
+}
+
+// ── CONTEST ───────────────────────────────────────────────────────
+function buildRanked(players,scoreFn,asc){
+	const sorted=players.slice().sort((a,b)=>asc?scoreFn(a)-scoreFn(b):scoreFn(b)-scoreFn(a));
+	let rank=1;
+	return sorted.map((p,i)=>{
+		if(i>0&&scoreFn(sorted[i])===scoreFn(sorted[i-1])){}else rank=i+1;
+		return{rank,name:p.name,score:scoreFn(p)};
+	});
+}
+
+function contestTable(ranked,n,badgeClass,title){
+	const rows=ranked.slice(0,n);
+	const lastScore=rows[rows.length-1]?.score;
+	const hasTie=ranked.filter(r=>r.score===lastScore).length>1&&ranked.findIndex(r=>r.score===lastScore)<n;
+	const trs=rows.map(r=>{
+		const rc=r.rank===1?'rank-1':r.rank===2?'rank-2':r.rank===3?'rank-3':'rank-other';
+		const esc=r.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+		return`<tr style="cursor:pointer" onclick="openProfileFromContest('${esc}')">
+			<td style="width:32px"><span class="rank-badge ${rc}">${r.rank}</span></td>
+			<td style="font-weight:500">${r.name} <i class="ti ti-chevron-right" style="font-size:10px;color:var(--tx2)" aria-hidden="true"></i></td>
+			<td style="text-align:right;font-weight:500">${r.score.toLocaleString()}</td>
+		</tr>`;
+	}).join('');
+	return`<div class="contest-card">
+		<div class="contest-card-header"><span class="title">${title}</span><span class="badge ${badgeClass}">${title.includes('Top')?'Top '+n:'Bottom '+n}</span></div>
+		<table class="contest-table"><thead><tr><th style="width:32px">#</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>${trs}</tbody></table>
+		${hasTie?`<div class="tied-note">* Tied at rank ${rows[rows.length-1].rank}</div>`:''}
+	</div>`;
+}
+
+function renderContest(){
+	const oTop=buildRanked(allPlayers,p=>p.pts,false);
+	const oBot=buildRanked(allPlayers,p=>p.pts,true);
+	const eTop=buildRanked(allPlayers,p=>epicScore(p),false);
+	const eBot=buildRanked(allPlayers,p=>epicScore(p),true);
+	document.getElementById('tab-contest').innerHTML=`
+		<div class="contest-notice"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Updates automatically every ${AUTO_REFRESH_SECS}s — or hit Refresh now.</div>
+		<div class="contest-grid">
+			${contestTable(oTop,20,'badge-top','Overall Score — Top 20')}
+			${contestTable(oBot,20,'badge-bot','Overall Score — Bottom 20')}
+			${contestTable(eTop,20,'badge-epic badge-top','Epic Monster — Top 20')}
+			${contestTable(eBot,20,'badge-epic badge-bot','Epic Monster — Bottom 20')}
+		</div>`;
+}
+
+// ── CHEST BREAKDOWN ───────────────────────────────────────────────
+function renderChests(){
+	const groupData=CHEST_GROUPS.map(g=>({
+		...g,
+		total:allPlayers.reduce((s,p)=>s+g.cols.reduce((ss,c)=>ss+(p.chests[c.name]||0),0),0)
+	})).sort((a,b)=>b.total-a.total);
+
+	const maxTotal=Math.max(1,groupData[0].total);
+
+	const bars=groupData.map(g=>`
+		<div class="bar-row">
+			<span class="bar-label">${g.label}</span>
+			<div class="bar-track"><div class="bar-fill" style="width:${Math.round(g.total/maxTotal*100)}%;background:${g.color}"></div></div>
+			<span class="bar-val">${g.total.toLocaleString()}</span>
+		</div>`).join('');
+
+	const chestRows=CHEST_COLS.map(c=>{
+		const total=allPlayers.reduce((s,p)=>s+(p.chests[c.name]||0),0);
+		if(!total)return'';
+		const maxV=Math.max(...allPlayers.map(p=>p.chests[c.name]||0));
+		const topP=allPlayers.find(p=>(p.chests[c.name]||0)===maxV&&maxV>0);
+		return`<tr><td>${c.name}</td><td style="text-align:right">${c.pts}</td><td style="text-align:right;font-weight:500">${total.toLocaleString()}</td><td>${topP?topP.name+' ('+maxV+')':'—'}</td></tr>`;
+	}).join('');
+
+	document.getElementById('tab-chests').innerHTML=`
+		<div class="card"><h3>Chest category totals — all players combined</h3><div style="max-width:560px;padding-top:4px">${bars}</div></div>
+		<div class="card"><h3>All chest types — totals &amp; top collectors</h3>
+			<div class="tbl-scroll"><table class="player-table">
+				<thead><tr><th>Chest type</th><th style="text-align:right">Pts each</th><th style="text-align:right">Total collected</th><th>Top collector</th></tr></thead>
+				<tbody>${chestRows}</tbody>
+			</table></div>
+		</div>`;
+}
+
+// ── PLAYER PROFILE ────────────────────────────────────────────────
+function openProfile(playerName){
+	currentProfileName=playerName;
+	setUrlPlayer(playerName);
+	const p=allPlayers.find(x=>x.name===playerName);
+	if(!p) return;
+
+	const sorted=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
+	const rank=sorted.findIndex(x=>x.name===playerName)+1;
+	const total=allPlayers.reduce((s,x)=>s+x.pts,0);
+	const avg=Math.round(total/allPlayers.length);
+	const pctile=Math.round((1-(rank-1)/allPlayers.length)*100);
+	const epicPts=epicScore(p);
+	const epicRank=allPlayers.slice().sort((a,b)=>epicScore(b)-epicScore(a)).findIndex(x=>x.name===playerName)+1;
+	// Daily pace
+	const cDays=(currentCycleDays&&currentCycleDays>0)?currentCycleDays:null;
+	const pDays=(archiveCycleDays&&archiveCycleDays>0)?archiveCycleDays:null;
+	const curPpd=cDays?Math.round(p.pts/cDays):null;
+	const archiveP=archivePlayers.find(x=>x.name===playerName||x.name.toLowerCase()===playerName.toLowerCase());
+	const prevPpd=(pDays&&archiveP)?Math.round(archiveP.pts/pDays):null;
+	const paceDiff=(curPpd!==null&&prevPpd!==null)?curPpd-prevPpd:null;
+	const initials=playerName.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+	const portrait=getPortrait(playerName);
+
+	// Compute status pills from log
+	const playerStreak = logEvents.length > 0 ? (()=>{
+		const {allStreaks} = getPlayerStreaks();
+		return allStreaks.find(s=>s.name===playerName) || {streak:0,hoursAgo:null};
+	})() : null;
+	const pts24h = getPtsLast24h(playerName);
+
+	const prevPlayer=rank>1?sorted[rank-2]:null;
+	const nextPlayer=rank<sorted.length?sorted[rank]:null;
+
+	const maxChestCount={};
+	CHEST_COLS.forEach(c=>{ maxChestCount[c.name]=Math.max(...allPlayers.map(x=>x.chests[c.name]||0)); });
+
+	const groupBreakdown=GROUP_NAMES.map(g=>{
+		const cols=CHEST_COLS.filter(c=>c.group===g);
+		const groupPts=cols.reduce((s,c)=>s+(p.chests[c.name]||0)*c.pts,0);
+		return{g,cols,groupPts,color:cols[0].color};
+	}).filter(x=>x.groupPts>0);
+
+	const groupSections=GROUP_NAMES.map(g=>{
+		const cols=CHEST_COLS.filter(c=>c.group===g);
+		const hasAny=cols.some(c=>(p.chests[c.name]||0)>0);
+		if(!hasAny)return'';
+		const color=cols[0].color;
+		const barHtml=cols.map(c=>{
+			const count=p.chests[c.name]||0;
+			if(!count)return'';
+			const max=maxChestCount[c.name]||1;
+			const pct=Math.round(count/max*100);
+			const clanTotal=allPlayers.reduce((s,x)=>s+(x.chests[c.name]||0),0);
+			const share=clanTotal>0?Math.round(count/clanTotal*100):0;
+			return`<div class="profile-bar-row">
+				<span class="profile-bar-label">${c.name}</span>
+				<div class="profile-bar-track"><div class="profile-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+				<span class="profile-bar-val">${count}</span>
+				${share>0?`<span class="pct-pill">${share}% of clan</span>`:''}
+			</div>`;
+		}).join('');
+		return barHtml?`<div class="chest-group-block"><div class="chest-group-title">${g}</div>${barHtml}</div>`:'';
+	}).join('');
+
+	const diffSign=p.pts>=avg?'+':'';
+	const diffCls=p.pts>=avg?'above':'below';
+	const prevEsc=prevPlayer?prevPlayer.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'"):'';
+	const nextEsc=nextPlayer?nextPlayer.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'"):'';
+
+	document.getElementById('tab-leaderboard').innerHTML=`
+		<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(1rem,2vw,1.5rem);flex-wrap:wrap;gap:8px">
+			<button class="profile-back" onclick="closeProfile()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back to leaderboard</button>
+			<div class="nav-btns">
+				<button class="nav-btn" onclick="openProfile('${prevEsc}')" ${!prevPlayer?'disabled':''}><i class="ti ti-chevron-left" aria-hidden="true"></i> ${prevPlayer?prevPlayer.name.slice(0,14):'—'}</button>
+				<button class="nav-btn" onclick="openProfile('${nextEsc}')" ${!nextPlayer?'disabled':''}>${nextPlayer?nextPlayer.name.slice(0,14):'—'} <i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+			</div>
+		</div>
+		<div class="profile-header">
+			<div style="display:flex;align-items:center;gap:16px">
+				<div class="profile-avatar" style="background:#000;border:2px solid var(--bd2);overflow:hidden;padding:0">
+					<img src="${portrait.url}" alt="${portrait.name}" 
+						style="width:100%;height:100%;object-fit:cover;object-position:top center"
+						onerror="this.parentElement.textContent='${initials}'"
+					/>
+				</div>
+				<div>
+					<div class="profile-name">${p.name}</div>
+					<div class="profile-rank-line">Rank #${rank} of ${allPlayers.length} &nbsp;·&nbsp; Top ${pctile}% of clan</div>
+					<div style="font-size:var(--fs-xs);color:var(--tx2);margin-top:3px;font-style:italic">${portrait.name} — Total Battle Hero</div>
+					<div style="margin-top:8px" id="profile-status-pills">
+						${logEvents.length>0&&playerStreak?(()=>{
+							let pills='';
+							if(playerStreak.streak>=2) pills+='<span class="status-pill pill-streak" style="margin-right:5px">🔥 '+playerStreak.streak+'d streak</span>';
+							if(playerStreak.hoursAgo===null) pills+='<span class="status-pill pill-inactive" style="margin-right:5px">No log data</span>';
+							else if(playerStreak.hoursAgo<=3) pills+='<span class="status-pill pill-hot" style="margin-right:5px">🟢 Active now</span>';
+							else if(playerStreak.hoursAgo<=24) pills+='<span class="status-pill pill-active" style="margin-right:5px">Active today</span>';
+							else if(playerStreak.hoursAgo<=48) pills+='<span class="status-pill pill-idle" style="margin-right:5px">Active yesterday</span>';
+							else pills+='<span class="status-pill pill-inactive" style="margin-right:5px">Inactive '+Math.floor(playerStreak.hoursAgo/24)+'d</span>';
+							if(pts24h>0) pills+='<span class="status-pill pill-hot">+'+pts24h.toLocaleString()+' pts today</span>';
+							return pills;
+						})():''}
+					</div>
+				</div>
+			</div>
+			<div class="profile-stats">
+				<div class="profile-stat"><div class="val">${p.pts.toLocaleString()}</div><div class="lbl">Total points</div></div>
+				<div class="profile-stat"><div class="val"><span class="diff-badge ${diffCls}">${diffSign}${(p.pts-avg).toLocaleString()}</span></div><div class="lbl">vs clan avg</div></div>
+				<div class="profile-stat"><div class="val">${epicPts}</div><div class="lbl">Epic Monster</div></div>
+				<div class="profile-stat"><div class="val">#${epicRank}</div><div class="lbl">Epic rank</div></div>
+				${curPpd!==null?`<div class="profile-stat"><div class="val">${curPpd.toLocaleString()}</div><div class="lbl">pts/day</div></div>`:''}
+				${paceDiff!==null?`<div class="profile-stat"><div class="val"><span class="diff-badge ${paceDiff>=0?'above':'below'}">${paceDiff>=0?'+':''}${paceDiff.toLocaleString()}</span></div><div class="lbl">vs last cycle</div></div>`:''}
+			</div>
+		</div>
+		<div class="profile-grid">
+			<div class="card" style="margin-bottom:0"><div class="section-label">Score vs clan average</div><div id="ec-radar" class="ec-chart" style="height:clamp(200px,24vw,280px)"></div></div>
+			<div class="card" style="margin-bottom:0"><div class="section-label">Points by category</div><div id="ec-pie" class="ec-chart" style="height:clamp(200px,24vw,280px)"></div></div>
+		</div>
+		<div class="card" style="margin-top:12px">
+			<div class="section-label" style="margin-bottom:14px">Chest counts — relative to clan best</div>
+			${groupSections||'<div style="color:var(--tx2);font-size:var(--fs-sm)">No chests recorded yet.</div>'}
+		</div>
+		<div class="card" style="margin-top:12px" id="profile-trend-card">
+			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+				<div class="section-label" style="margin-bottom:0">Points earned from log</div>
+				<div style="display:flex;gap:6px">
+					<button class="nav-btn trend-window-btn active" onclick="setTrendWindow(24,this)">24h</button>
+					<button class="nav-btn trend-window-btn" onclick="setTrendWindow(168,this)">7d</button>
+				</div>
+			</div>
+			<div id="ec-profile-trend" class="ec-chart" style="height:clamp(160px,20vw,240px)"></div>
+
+		</div>
+		<div class="card" style="margin-top:12px" id="profile-cycles-card">
+			<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+				<div class="section-label" style="margin-bottom:0">Performance by cycle</div>
+				<div style="display:flex;gap:6px">
+					<button class="nav-btn cycle-metric-btn active" onclick="setCycleMetric('total',this)">Total</button>
+					<button class="nav-btn cycle-metric-btn" onclick="setCycleMetric('pace',this)">Per day</button>
+				</div>
+			</div>
+			<div id="ec-profile-cycles" class="ec-chart" style="height:clamp(180px,22vw,260px)"></div>
+		</div>`;
+
+	requestAnimationFrame(()=>{
+		// Radar
+		const playerGroupPts=GROUP_NAMES.map(g=>CHEST_COLS.filter(c=>c.group===g).reduce((s,c)=>s+(p.chests[c.name]||0)*c.pts,0));
+		const avgGroupPts=GROUP_NAMES.map(g=>{
+			const t=allPlayers.reduce((s,x)=>s+CHEST_COLS.filter(c=>c.group===g).reduce((ss,c)=>ss+(x.chests[c.name]||0)*c.pts,0),0);
+			return Math.round(t/allPlayers.length);
+		});
+		const maxGroupPts=GROUP_NAMES.map((_,i)=>Math.max(playerGroupPts[i],avgGroupPts[i],1));
+
+		const cr=getOrCreateChart('ec-radar');
+		if(cr) cr.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'item'},
+			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxGroupPts[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:10},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'radar',data:[
+				{name:'This player',value:playerGroupPts,areaStyle:{color:'rgba(24,95,165,0.15)'},lineStyle:{color:'#185FA5',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#185FA5'}},
+				{name:'Clan avg',value:avgGroupPts,areaStyle:{color:'rgba(127,119,221,0.08)'},lineStyle:{color:'#7F77DD',width:1.5,type:'dashed'},symbol:'circle',symbolSize:4,itemStyle:{color:'#7F77DD'}}
+			]}]
+		});
+
+		// Pie
+		const cp=getOrCreateChart('ec-pie');
+		if(cp&&groupBreakdown.length) cp.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:{...TOOLTIP_STYLE(),trigger:'item',formatter:p=>`${p.name}<br/><b>${p.value.toLocaleString()}</b> pts (${p.percent.toFixed(1)}%)`},
+			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			series:[{type:'pie',radius:['40%','70%'],center:['38%','50%'],
+				label:{show:false},
+				emphasis:{label:{show:true,fontSize:13,fontWeight:600,color:EC_TEXT2()}},
+				data:groupBreakdown.map(x=>({name:x.g,value:x.groupPts,itemStyle:{color:x.color}}))}]
+		});
+		// Trend chart
+		renderProfileTrend(playerName, 24);
+		// Cross-cycle performance chart
+		renderProfileCycles(playerName);
+	});
+}
+
+let profileTrendHours = 24;
+function setTrendWindow(hours, btn){
+	profileTrendHours = hours;
+	document.querySelectorAll('.trend-window-btn').forEach(b=>b.classList.remove('active'));
+	if(btn) btn.classList.add('active');
+	if(currentProfileName) renderProfileTrend(currentProfileName, hours);
+}
+
+let profileCycleMetric = 'total';
+function setCycleMetric(metric, btn){
+	profileCycleMetric = metric;
+	document.querySelectorAll('.cycle-metric-btn').forEach(b=>b.classList.remove('active'));
+	if(btn) btn.classList.add('active');
+	if(currentProfileName) renderProfileCycles(currentProfileName);
+}
+
+function renderProfileCycles(playerName){
+	var el=document.getElementById('ec-profile-cycles');
+	if(!el) return;
+	var card=document.getElementById('profile-cycles-card');
+
+	// Helper: find a player's pts in a given player list (case-insensitive for renames)
+	function findPts(players,name){
+		var exact=players.find(function(x){return x.name===name;});
+		if(exact) return exact.pts;
+		var ci=players.find(function(x){return x.name.toLowerCase()===name.toLowerCase();});
+		return ci?ci.pts:null;
+	}
+
+	// Build chronological series: oldest archive → ... → current
+	// allArchives is newest-first, so reverse for chronological order
+	var points=[];
+	var archivesChrono=allArchives.slice().reverse();
+	archivesChrono.forEach(function(a){
+		var pts=findPts(a.players,playerName);
+		if(pts!==null){
+			points.push({label:a.label, total:pts, days:a.days, pace:(a.days&&a.days>0)?Math.round(pts/a.days):null});
+		}
+	});
+	// Current cycle
+	var curPts=findPts(allPlayers,playerName);
+	if(curPts!==null){
+		var cd=(currentCycleDays&&currentCycleDays>0)?currentCycleDays:null;
+		points.push({label:(currentCycleLabel||'Current').replace(/-\s*$/,'')+' (now)', total:curPts, days:cd, pace:cd?Math.round(curPts/cd):null});
+	}
+
+	// Need at least 2 data points to be meaningful
+	if(points.length<2){
+		if(card) card.style.display='none';
+		return;
+	}
+	if(card) card.style.display='';
+
+	var isPace=profileCycleMetric==='pace';
+	var vals=points.map(function(p){return isPace?(p.pace||0):p.total;});
+	var labels=points.map(function(p){return p.label;});
+	var barColor=isPace?'#7F77DD':'#185FA5';
+
+	var ch=getOrCreateChart('ec-profile-cycles');
+	if(ch) ch.setOption({
+		backgroundColor:CHART_BG,
+		tooltip:Object.assign({},TOOLTIP_STYLE(),{trigger:'axis',axisPointer:{type:'shadow'},formatter:function(ps){
+			var i=ps[0].dataIndex,pt=points[i];
+			var s='<b>'+pt.label+'</b><br/>';
+			s+='Total: '+pt.total.toLocaleString()+' pts<br/>';
+			s+='Per day: '+(pt.pace!==null?pt.pace.toLocaleString()+' pts/day':'—');
+			if(pt.days) s+='<br/><span style="opacity:0.7">'+pt.days+' days</span>';
+			return s;
+		}}),
+		grid:{left:8,right:16,top:16,bottom:48,containLabel:true},
+		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:labels.length>4?25:0,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+		yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+		series:[{type:'bar',data:vals,barMaxWidth:48,
+			itemStyle:{color:barColor,borderRadius:[5,5,0,0]},
+			label:{show:true,position:'top',color:EC_TEXT2(),fontSize:10,fontFamily:'DM Sans',formatter:function(d){return d.value>=1000?(d.value/1000).toFixed(1)+'k':d.value;}}
+		}]
+	});
+}
+
+function renderProfileTrend(playerName, hours){
+	const cutoff = new Date(Date.now() - hours*3600000);
+		var _aliases=getPlayerAliases(playerName);
+	const playerLog = logEvents.filter(e=>_aliases.indexOf(e.name)>=0 && e.ts>=cutoff);
+
+	if(!playerLog.length){
+		const ct=getOrCreateChart('ec-profile-trend');
+		if(ct) ct.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No log data for this window',fill:EC_TEXT(),fontSize:13}}]});
+		return;
+	}
+
+	// Bucket into hourly or 6h intervals
+	const bucketHours = hours<=24?1:6;
+	const buckets={};
+	playerLog.forEach(e=>{
+		const bucketTime=new Date(Math.floor(e.ts/1000/3600/bucketHours)*bucketHours*3600*1000);
+		const key=bucketTime.toISOString();
+		if(!buckets[key]) buckets[key]={ts:bucketTime,pts:0,count:0};
+		buckets[key].pts+=e.pts;
+		buckets[key].count++;
+	});
+	const bucketArr=Object.values(buckets).sort((a,b)=>a.ts-b.ts);
+	const labels=bucketArr.map(b=>b.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+	const values=bucketArr.map(b=>b.pts);
+
+	const ct=getOrCreateChart('ec-profile-trend');
+	if(ct) ct.setOption({
+		backgroundColor:CHART_BG,
+		tooltip:{...TOOLTIP_STYLE(),trigger:'axis',formatter:p=>`${p[0].name}<br/><b>+${p[0].value}</b> pts`},
+		grid:{left:8,right:16,top:8,bottom:40,containLabel:true},
+		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:hours>24?30:0},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+		yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:10},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+		series:[{type:'line',data:values,smooth:true,symbol:'circle',symbolSize:5,
+			itemStyle:{color:'#185FA5'},lineStyle:{color:'#185FA5',width:2},
+			areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(24,95,165,0.3)'},{offset:1,color:'rgba(24,95,165,0.02)'}]}}}]
+	});
+
+}
+
+function openProfileFromContest(playerName){
+	// Switch to leaderboard tab, then open profile
+	activateTab('leaderboard');
+	openProfile(playerName);
+}
+
+function closeProfile(){
+	currentProfileName=null;
+	setUrlPlayer(null);
+	renderLeaderboard();
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────
+// ── CYCLE HISTORY ─────────────────────────────────────────────────
+function setArchiveCycle(idx){
+	if(!allArchives[idx]) return;
+	selectedArchiveIdx = idx;
+	var a = allArchives[idx];
+	archivePlayers = a.players;
+	archiveCycleLabel = a.label;
+	archiveCycleDays = a.days;
+	renderHistory();
+}
+
+function renderHistory(){
+	var el=document.getElementById('tab-history');
+	if(!el) return;
+	if(!archivePlayers.length){
+		el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--tx2)">Archive data not available.</div>';
+		return;
+	}
+	var curMap={},prevMap={};
+	allPlayers.forEach(function(p){curMap[p.name]=p.pts;});
+	// Build case-insensitive lookup for archive — so renamed players still match
+	var prevMapLower={};
+	archivePlayers.forEach(function(p){
+		prevMap[p.name]=p.pts;
+		prevMapLower[p.name.toLowerCase()]=p.pts;
+	});
+	// Only use current cycle player names (deduplicates renames)
+	var compared=allPlayers.map(function(p){
+		var prev=prevMap[p.name]; // exact match first
+		if(prev===undefined) prev=prevMapLower[p.name.toLowerCase()]; // fallback case-insensitive
+		prev=prev||0;
+		return{name:p.name,cur:p.pts,prev:prev,
+			delta:p.pts-prev,
+			isNew:prev===0,isGone:false};
+	});
+	var sorted=compared.slice().sort(function(a,b){return b.delta-a.delta;});
+	var curTotal=allPlayers.reduce(function(s,p){return s+p.pts;},0);
+	var prevTotal=archivePlayers.reduce(function(s,p){return s+p.pts;},0);
+	var curAvg=Math.round(curTotal/allPlayers.length);
+	var prevAvg=Math.round(prevTotal/archivePlayers.length);
+	var newPlayers=compared.filter(function(p){return p.isNew;});
+	var mostImproved=sorted[0];
+	var totalDelta=curTotal-prevTotal;
+	var cLabel=archiveCycleLabel||'last cycle';
+	var cDays=(currentCycleDays&&currentCycleDays>0)?currentCycleDays:1;
+	var pDays=(archiveCycleDays&&archiveCycleDays>0)?archiveCycleDays:1;
+
+	// Cycle selector (only if more than one archived cycle exists)
+	var selectorHtml='';
+	if(allArchives.length>1){
+		var opts=allArchives.map(function(a,i){
+			return'<option value="'+i+'"'+(i===selectedArchiveIdx?' selected':'')+'>'+a.label+'</option>';
+		}).join('');
+		selectorHtml='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">'
+			+'<span style="font-size:var(--fs-sm);color:var(--tx2)">Compare current cycle against:</span>'
+			+'<select onchange="setArchiveCycle(parseInt(this.value))" style="font-family:var(--font);font-size:var(--fs-sm);padding:7px 12px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg2);color:var(--tx);cursor:pointer;outline:none">'+opts+'</select>'
+			+'</div>';
+	}
+
+	// Build metrics HTML
+	var mHtml='<div class="metrics">'
+		+'<div class="metric"><div class="label">Cycle delta</div>'
+		+'<div class="val" style="color:'+(totalDelta>=0?'#2d5a0e':'#922020')+'">'+(totalDelta>=0?'+':'')+Math.round(totalDelta/1000)+'k</div>'
+		+'<div class="sub">vs '+cLabel+'</div></div>'
+		+'<div class="metric"><div class="label">Avg score</div>'
+		+'<div class="val">'+curAvg.toLocaleString()+'</div>'
+		+'<div class="sub">was '+prevAvg.toLocaleString()+' · '+cLabel+'</div></div>'
+		+'<div class="metric"><div class="label">Days elapsed</div>'
+		+'<div class="val">'+(currentCycleDays||'?')+'</div>'
+		+'<div class="sub">of '+(archiveCycleDays||'?')+' days last cycle</div></div>'
+		+'<div class="metric"><div class="label">Most improved</div>'
+		+'<div class="val" style="font-size:var(--fs-lg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(mostImproved?mostImproved.name.split(' ')[0]:'--')+'</div>'
+		+'<div class="sub">'+(mostImproved&&mostImproved.delta>=0?'+':'')+((mostImproved&&mostImproved.delta)||0).toLocaleString()+' pts</div></div>'
+		+'<div class="metric"><div class="label">New players</div>'
+		+'<div class="val">'+newPlayers.length+'</div>'
+		+'<div class="sub">not in last cycle</div></div>'
+		+'</div>';
+
+	var chartsHtml='<div class="charts-row">'
+		+'<div class="card" style="margin-bottom:0"><h3>Top score changes vs last cycle</h3>'
+		+'<div id="ec-hist-delta" class="ec-chart" style="height:clamp(260px,32vw,380px)"></div></div>'
+		+'<div class="card" style="margin-bottom:0"><h3>Current vs previous — all players</h3>'
+		+'<div id="ec-hist-scatter" class="ec-chart" style="height:clamp(260px,32vw,380px)"></div></div>'
+		+'</div>';
+
+	var theadHtml='<thead><tr>'
+		+'<th style="width:48px">#</th>'
+		+'<th class="sortable" onclick="setHistSort(\'name\')" style="cursor:pointer">Player</th>'
+		+'<th class="sortable" onclick="setHistSort(\'cur\')" style="text-align:right;cursor:pointer">Current</th>'
+		+'<th class="sortable" onclick="setHistSort(\'prev\')" style="text-align:right;cursor:pointer">'+cLabel+'</th>'
+		+'<th class="sortable" onclick="setHistSort(\'curPpd\')" style="text-align:right;cursor:pointer">Cur pts/day</th>'
+		+'<th class="sortable" onclick="setHistSort(\'prevPpd\')" style="text-align:right;cursor:pointer">Prev pts/day</th>'
+		+'<th class="sortable" onclick="setHistSort(\'pace\')" style="text-align:right;cursor:pointer">Daily pace</th>'
+		+'<th class="sortable" onclick="setHistSort(\'delta\')" style="text-align:right;cursor:pointer">Change</th>'
+		+'<th style="width:80px">Trend</th>'
+		+'</tr></thead>';
+
+	var tableHtml='<div class="card" style="margin-top:12px">'
+		+'<h3>Full cycle comparison <span style="font-weight:400;color:var(--tx2);font-size:var(--fs-xs)">click headers to sort</span></h3>'
+		+'<div class="tbl-scroll"><table class="player-table">'+theadHtml
+		+'<tbody id="hist-tbody"></tbody></table></div></div>';
+
+	el.innerHTML=selectorHtml+mHtml+chartsHtml+tableHtml;
+
+	requestAnimationFrame(function(){
+		// Delta bar chart
+		var top15=sorted.slice(0,15);
+		var bot5=sorted.slice(-5).reverse();
+		var combined=top15.concat(bot5.filter(function(p){return top15.indexOf(p)<0;}));
+		var ch=getOrCreateChart('ec-hist-delta');
+		if(ch) ch.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:Object.assign({},TOOLTIP_STYLE(),{trigger:'axis',axisPointer:{type:'shadow'},
+				formatter:function(p){return'<b>'+p[0].name+'</b><br/>'+(p[0].value>=0?'+':'')+p[0].value.toLocaleString()+' pts';}}),
+			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
+			xAxis:{type:'category',data:combined.map(function(p){return p.name.length>12?p.name.slice(0,12)+'…':p.name;}),
+				axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,
+				formatter:function(v){return Math.abs(v)>=1000?(v/1000).toFixed(0)+'k':v;}},
+				splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[{type:'bar',
+				data:combined.map(function(p){return{value:p.delta,itemStyle:{color:p.delta>=0?'#1D9E75':'#E24B4A',borderRadius:p.delta>=0?[4,4,0,0]:[0,0,4,4]}};}),
+				markLine:{silent:true,lineStyle:{color:EC_SPLIT(),type:'dashed'},data:[{yAxis:0}]}}]
+		});
+
+		// Scatter chart
+		var sc=getOrCreateChart('ec-hist-scatter');
+		var scData=compared.filter(function(p){return!p.isNew;}).map(function(p){return{value:[p.prev,p.cur],name:p.name};});
+		var maxVal=Math.max.apply(null,compared.map(function(p){return Math.max(p.cur,p.prev);}));
+		maxVal=Math.max(maxVal,1);
+		if(sc) sc.setOption({
+			backgroundColor:CHART_BG,
+			tooltip:Object.assign({},TOOLTIP_STYLE(),{trigger:'item',
+				formatter:function(p){return'<b>'+p.name+'</b><br/>Last: '+p.value[0].toLocaleString()+'<br/>Now: '+p.value[1].toLocaleString();}}),
+			grid:{left:8,right:16,top:16,bottom:40,containLabel:true},
+			xAxis:{type:'value',name:'Last cycle',nameTextStyle:{color:EC_TEXT(),fontSize:10},
+				axisLabel:{color:EC_TEXT(),fontSize:9,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
+				splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			yAxis:{type:'value',name:'Current',nameTextStyle:{color:EC_TEXT(),fontSize:10},
+				axisLabel:{color:EC_TEXT(),fontSize:9,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
+				splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:[
+				{type:'line',data:[[0,0],[maxVal,maxVal]],lineStyle:{color:EC_SPLIT(),type:'dashed',width:1},symbol:'none',tooltip:{show:false},z:1},
+				{type:'scatter',data:scData,symbolSize:7,
+					itemStyle:{color:function(p){return p.value[1]>=p.value[0]?'#1D9E75':'#E24B4A';},opacity:0.8},
+					emphasis:{scale:1.5}}
+			]
+		});
+
+		// Table rows
+		var tbody=document.getElementById('hist-tbody');
+		if(tbody){
+			var withPpd=sorted.map(function(p){
+				var cp=Math.round(p.cur/cDays);
+				var pp=p.prev>0?Math.round(p.prev/pDays):null;
+				return Object.assign({},p,{curPpd:cp,prevPpd:pp,pace:pp!==null?cp-pp:null});
+			});
+			var col=histSort.col,dir=histSort.dir,mul=dir==='asc'?1:-1;
+			var rows=withPpd.slice().sort(function(a,b){
+				if(col==='name') return mul*a.name.localeCompare(b.name);
+				if(col==='cur') return mul*(a.cur-b.cur);
+				if(col==='prev') return mul*(a.prev-b.prev);
+				if(col==='curPpd') return mul*(a.curPpd-b.curPpd);
+				if(col==='prevPpd') return mul*((a.prevPpd||0)-(b.prevPpd||0));
+				if(col==='pace') return mul*((a.pace||0)-(b.pace||0));
+				if(col==='delta') return mul*(a.delta-b.delta);
+				return 0;
+			});
+			var maxD=Math.max.apply(null,withPpd.map(function(x){return Math.abs(x.delta);}));
+			maxD=Math.max(maxD,1);
+			tbody.innerHTML=rows.map(function(p,i){
+				var sg=p.delta>=0?'+':'';
+				var cl=p.delta>=0?'above':'below';
+				var bw=Math.round(Math.abs(p.delta)/maxD*100);
+				var bc=p.delta>=0?'#1D9E75':'#E24B4A';
+				var nt=p.isNew?'<span class="status-pill pill-hot" style="margin-left:6px;font-size:10px">NEW</span>':'';
+				var es=p.name.replace(/'/g,"\'");
+				var ps=p.pace!==null&&p.pace>=0?'+':'';
+				var pc2=p.pace!==null&&p.pace>=0?'above':'below';
+				return '<tr class="clickable" onclick="openProfileFromContest(\'' + es + '\')">'
+					+'<td style="width:48px;color:var(--tx2);font-family:var(--mono);font-size:var(--fs-xs)">'+(i+1)+'</td>'
+					+'<td style="font-weight:500">'+p.name+nt+'</td>'
+					+'<td style="text-align:right;font-family:var(--mono)">'+p.cur.toLocaleString()+'</td>'
+					+'<td style="text-align:right;font-family:var(--mono);color:var(--tx2)">'+(p.prev>0?p.prev.toLocaleString():'&mdash;')+'</td>'
+					+'<td style="text-align:right;font-family:var(--mono);font-weight:500">'+p.curPpd.toLocaleString()+'</td>'
+					+'<td style="text-align:right;font-family:var(--mono);color:var(--tx2)">'+(p.prevPpd!==null?p.prevPpd.toLocaleString():'&mdash;')+'</td>'
+					+'<td style="text-align:right">'+(p.pace!==null?'<span class="diff-badge '+pc2+'">'+ps+p.pace.toLocaleString()+'</span>':'&mdash;')+'</td>'
+					+'<td style="text-align:right"><span class="diff-badge '+cl+'">'+sg+p.delta.toLocaleString()+'</span></td>'
+					+'<td><div class="bar-track"><div class="bar-fill" style="width:'+bw+'%;background:'+bc+'"></div></div></td>'
+					+'</tr>';
+			}).join('');
+		}
+	});
+}
+
+
+// ── PREMIUM TAB (#premium — hidden, not in nav) ─────────────────
+function renderPremium(){
+	var el=document.getElementById('tab-premium');
+	if(!el) return;
+
+	// Compute premium stats per player
+	var players=allPlayers.map(function(p){
+		var premPts=PREMIUM_CHEST_COLS.reduce(function(s,c){return s+(p.chests[c.name]||0)*c.pts;},0);
+		var premCount=PREMIUM_CHEST_COLS.reduce(function(s,c){return s+(p.chests[c.name]||0);},0);
+		var premUsd=PREMIUM_CHEST_COLS.reduce(function(s,c){return s+chestUsd(p.chests[c.name]||0,c.usd);},0);
+		return Object.assign({},p,{premPts:premPts,premCount:premCount,premUsd:premUsd});
+	}).filter(function(p){return p.premPts>0||p.premCount>0;})
+	  .sort(function(a,b){return b.premUsd-a.premUsd;});
+
+	var totals=PREMIUM_CHEST_COLS.map(function(c){
+		var total=allPlayers.reduce(function(s,p){return s+(p.chests[c.name]||0);},0);
+		return{name:c.name,color:c.color,pts:c.pts,usd:c.usd,total:total,
+			totalUsd:chestUsd(total,c.usd)};
+	});
+	var grandTotal=totals.reduce(function(s,c){return s+c.total;},0);
+	var grandPts=totals.reduce(function(s,c){return s+c.total*c.pts;},0);
+	var grandUsd=totals.reduce(function(s,c){return s+c.totalUsd;},0);
+
+	// Metric cards
+	var mHtml='<div class="metrics">'
+		+'<div class="metric"><div class="label">Premium pts total</div><div class="val">'+grandPts.toLocaleString()+'</div><div class="sub">across all players</div></div>'
+		+'<div class="metric"><div class="label">Chests opened</div><div class="val">'+grandTotal.toLocaleString()+'</div><div class="sub">premium types</div></div>'
+		+'<div class="metric"><div class="label">Top collector</div><div class="val" style="font-size:var(--fs-lg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(players[0]?players[0].name.split(' ')[0]:'—')+'</div><div class="sub">'+(players[0]?players[0].premPts.toLocaleString()+' pts':'')+'</div></div>'
+		+'<div class="metric"><div class="label">Players active</div><div class="val">'+players.length+'</div><div class="sub">with premium chests</div></div>'
+		+'</div>';
+
+	// Chest type breakdown bars
+	var maxTotal=Math.max.apply(null,totals.map(function(c){return c.total;}));maxTotal=Math.max(maxTotal,1);
+	var barsHtml=totals.map(function(c){
+		var w=Math.round(c.total/maxTotal*100);
+		return'<div class="bar-row">'
+			+'<span class="bar-label">'+c.name+'</span>'
+			+'<div class="bar-track"><div class="bar-fill" style="width:'+w+'%;background:'+c.color+'"></div></div>'
+			+'<span class="bar-val">'+c.total.toLocaleString()+'</span>'
+			+'<span style="font-size:var(--fs-xs);color:var(--tx2);margin-left:8px;font-family:var(--mono)">'+(c.pts)+' pts ea</span>'
+			+'</div>';
+	}).join('');
+
+	// Player table
+	var rowsHtml=players.map(function(p,i){
+		var rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+		var chestCells=PREMIUM_CHEST_COLS.map(function(c){
+			var v=p.chests[c.name]||0;
+			return'<td style="text-align:right;font-family:var(--mono)">'+(v>0?v:'&mdash;')+'</td>';
+		}).join('');
+		var tr=document.createElement('tr');
+		tr.className='clickable';
+		tr.style.cursor='pointer';
+		tr.addEventListener('click',(function(name){return function(){openProfileFromContest(name);};})(p.name));
+		tr.innerHTML='<td style="width:36px"><span class="rank-badge '+rc+'">'+(i+1)+'</span></td>'
+			+'<td style="font-weight:500">'+p.name+'</td>'
+			+chestCells
+			+'<td style="text-align:right;font-family:var(--mono);font-weight:500">'+p.premCount.toLocaleString()+'</td>'
+			+'<td style="text-align:right;font-family:var(--mono);color:#E24B4A;font-weight:600">'+p.premPts.toLocaleString()+'</td>';
+		return tr.outerHTML;
+	}).join('');
+
+	var thCells=PREMIUM_CHEST_COLS.map(function(c){
+		return'<th style="text-align:right;white-space:nowrap">'+c.name.replace(' Chest','')+'</th>';
+	}).join('');
+
+	el.innerHTML=mHtml
+		+'<div class="card"><h3>Premium chest type totals</h3>'
+		+'<div style="max-width:560px;padding-top:4px">'+barsHtml+'</div></div>'
+		+'<div class="card"><h3>Player premium breakdown</h3>'
+		+'<div class="tbl-scroll"><table class="player-table">'
+		+'<thead><tr><th style="width:36px">#</th><th>Player</th>'+thCells
+		+'<th style="text-align:right">Total</th><th style="text-align:right;color:#E24B4A">Pts</th></tr></thead>'
+		+'<tbody>'+rowsHtml+'</tbody></table></div></div>';
+}
+
+function activateTab(name){
+	activeTab = name;
+	// Update URL hash
+	var _hash = name === 'overview' ? window.location.pathname : window.location.pathname + '#' + name;
+	if(name === 'leaderboard') {
+		var _pp = new URLSearchParams(window.location.search).get('player');
+		_hash = window.location.pathname + '#leaderboard' + (_pp ? '?player=' + encodeURIComponent(_pp) : '');
+	}
+	history.replaceState(null, '', _hash);
+	// Show/hide content panels
+	['overview','leaderboard','contest','chests','compare','activity','history','premium'].forEach(t=>{
+		const el=document.getElementById('tab-'+t);
+		if(el) t===name?el.classList.remove('hidden'):el.classList.add('hidden');
+	});
+	// Sync desktop tabs
+	document.querySelectorAll('.tab').forEach((t,i)=>{
+		const names=['overview','leaderboard','contest','chests','compare','activity','history','premium'];
+		t.classList.toggle('active', names[i]===name);
+	});
+	// Sync bottom nav
+	['overview','leaderboard','contest','chests','compare','activity','history','premium'].forEach(t=>{
+		const el=document.getElementById('bn-'+t);
+		if(el) el.classList.toggle('active', t===name);
+	});
+	// Resize charts
+	requestAnimationFrame(()=>{
+		if(name==='overview') ['ec-top10','ec-donut','ec-dist'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
+		if(name==='compare') ['ec-cmp-radar','ec-cmp-bar'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
+		if(name==='activity') ['ec-act-hourly','ec-act-top24','ec-act-top7d'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
+		if(name==='history') ['ec-hist-delta','ec-hist-scatter'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
+		// premium tab — re-render in case data updated
+		if(name==='premium') renderPremium();
+	});
+	// Scroll to top on mobile tab switch
+	if(window.innerWidth<=680) window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function switchTab(name,btn){
+	activateTab(name);
+}
+
+function mobileTab(name){
+	activateTab(name);
+}
+
+// ── PWA Install prompt ───────────────────────────────────────────
+var _pwaPrompt = null;
+
+// Inject manifest blob so we don't need a separate file
+(function(){
+	var manifest = {
+		name: 'GoD SK — Spring 2026',
+		short_name: 'GoD SK',
+		description: 'GoD SK Clan Analytics Dashboard',
+		start_url: window.location.href.split('#')[0],
+		display: 'standalone',
+		background_color: '#1a1a18',
+		theme_color: '#1a1a18',
+		orientation: 'portrait-primary',
+		icons: [
+			{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a1a18"/><text y=".9em" font-size="80" x="10">⚔️</text></svg>',sizes:'any',type:'image/svg+xml'}
+		]
+	};
+	var blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+	var url  = URL.createObjectURL(blob);
+	var link = document.getElementById('pwa-manifest');
+	if(link) link.href = url;
+})();
+
+window.addEventListener('beforeinstallprompt', function(e){
+	e.preventDefault();
+	_pwaPrompt = e;
+	var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+	if(isStandalone || localStorage.getItem('pwa-dismissed')) return;
+	setTimeout(function(){
+		if(localStorage.getItem('pwa-dismissed')) return;
+		var banner = document.getElementById('pwa-banner');
+		if(banner) banner.classList.remove('hidden');
+	}, 3000);
+});
+
+window.addEventListener('appinstalled', function(){
+	localStorage.setItem('pwa-dismissed','1');
+	var banner = document.getElementById('pwa-banner');
+	if(banner) banner.style.display='none';
+	_pwaPrompt = null;
+});
+
+function dismissPwaBanner(){
+	localStorage.setItem('pwa-dismissed','1');
+	var banner = document.getElementById('pwa-banner');
+	if(banner) banner.style.display='none';
+	_pwaPrompt = null;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+	var btn = document.getElementById('pwa-install-btn');
+	if(btn) btn.addEventListener('click', function(){
+		var banner = document.getElementById('pwa-banner');
+		if(banner) banner.style.display='none';
+		if(_pwaPrompt){
+			var p = _pwaPrompt;
+			_pwaPrompt = null;
+			p.prompt();
+			p.userChoice.then(function(r){
+				if(r.outcome==='accepted') localStorage.setItem('pwa-dismissed','1');
+			});
+		}
+	});
+});
+
+
+// Handle browser back/forward navigation
+window.addEventListener('popstate', function(){
+	var hashTab = window.location.hash.replace('#','').split('?')[0].trim() || 'overview';
+	var validTabs = ['overview','leaderboard','contest','chests','compare','activity','history','premium'];
+	var tab = validTabs.includes(hashTab) ? hashTab : 'overview';
+	activateTab(tab);
+});
+
+// Resize all charts on window resize
+window.addEventListener('resize',()=>{
+	Object.values(ecInstances).forEach(c=>{ try{c.resize();}catch(e){} });
+});
+
+// Close search results when clicking outside
+
+
+// ── URL routing ──────────────────────────────────────────────────
+function getUrlPlayer(){ return new URLSearchParams(window.location.search).get('player'); }
+
+function setUrlPlayer(name){
+	var base = window.location.pathname + '#leaderboard';
+	if(name) history.replaceState(null,'', base + '?player=' + encodeURIComponent(name));
+	else history.replaceState(null,'', base);
+}
+
+// ── Boot ─────────────────────────────────────────────────────────
+loadData().then(()=>{
+	startAutoRefresh();
+	const _validTabs=['overview','leaderboard','contest','chests','compare','activity','history','premium'];
+	const _hashTab=window.location.hash.replace('#','').split('?')[0].trim();
+	const _startTab=_validTabs.includes(_hashTab)?_hashTab:'overview';
+	const urlPlayer=getUrlPlayer();
+	if(urlPlayer){
+		const match=allPlayers.find(p=>p.name.toLowerCase()===urlPlayer.toLowerCase());
+		if(match){ activateTab('leaderboard'); openProfile(match.name); }
+		else if(_startTab!=='overview') activateTab(_startTab);
+	} else if(_startTab!=='overview'){
+		activateTab(_startTab);
+	}
+});
+</script>
+</body>
+</html>
