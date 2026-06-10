@@ -6,7 +6,7 @@ Internal clan analytics dashboard for **Guardians of Death (GoD)** in *Total Bat
 
 Self-contained single-file HTML/JS dashboard — vanilla JavaScript, [ECharts](https://echarts.apache.org/) for charts, no build step. On load it fetches one or more Google Sheets via the public **gviz JSON API** and renders clan analytics in the browser.
 
-Deployed on Netlify as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 735).
+Deployed on Netlify as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 736).
 
 Current version: `1.0.0` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
 
@@ -16,7 +16,7 @@ Seven tabs appear in the desktop tab bar and mobile bottom nav. An eighth view (
 
 ### Overview (`#overview`)
 
-Rendered by `renderOverview()` (line ~1150).
+Rendered by `renderOverview()` (line ~1159).
 
 - Metric cards: clan total points, active player count, average score, count above average
 - **Top 10 players** bar chart (`ec-top10`)
@@ -25,11 +25,11 @@ Rendered by `renderOverview()` (line ~1150).
 
 ### Leaderboard (`#leaderboard`)
 
-`renderLeaderboard()` (line ~1359). Sortable columns (rank, name, points, Epic Monster, vs avg). Search filter via `filterLB()`. Rows are clickable → opens a player profile.
+`renderLeaderboard()` (line ~1329). Sortable columns (rank, name, points, Epic Monster, vs avg). Search filter via `filterLB()`. Rows are clickable → opens a player profile.
 
 ### Contest rankings (`#contest`)
 
-`renderContest()` (line ~1438). Four tables, top and bottom 20 each:
+`renderContest()` (line ~1408). Four tables, top and bottom 20 each:
 
 - Overall score — top 20 / bottom 20
 - Epic Monster chests — top 20 / bottom 20 (`epicScore()`)
@@ -38,7 +38,7 @@ Rows open player profiles. Shows auto-refresh interval from `AUTO_REFRESH_SECS`.
 
 ### Chest breakdown (`#chests`)
 
-`renderChests()` (line ~1454). Clan-wide totals:
+`renderChests()` (line ~1424). Clan-wide totals:
 
 - Category bar chart (`CHEST_GROUPS` — Crypt, Rare Crypt, Epic Crypt, Citadel, Heroic, Special)
 - Per-chest-type table with points value, total collected, and top collector
@@ -47,7 +47,7 @@ Premium chest types (`PREMIUM_CHEST_COLS`) are parsed but **not** shown here.
 
 ### Compare players (`#compare`)
 
-`renderCompare()` / `updateCompare()` (lines ~1020–1148). Two player dropdowns; defaults to #1 vs #2 by points.
+`renderCompare()` / `updateCompare()` (lines ~1029–1156). Two player dropdowns; defaults to #1 vs #2 by points.
 
 - Summary stat bars: total points, rank, vs clan avg, Epic Monster, per-category points
 - Radar chart by category (`ec-cmp-radar`)
@@ -60,12 +60,14 @@ Premium chest types (`PREMIUM_CHEST_COLS`) are parsed but **not** shown here.
 - Metrics: total log entries, chests logged in last 24h / 7d
 - Hourly chest activity chart (last 24h)
 - Top earners by points — last 24h and last 7d
+- **Hot streaks** panel (`act-streaks`) — multi-day streaks via `getPlayerStreaks()`
+- **Inactive 48h+** panel (`act-inactive`) — players with no recent log activity
 
-Uses `getParticipationStats()` and `getPlayerStreaks()` internally. Note: `renderOverviewHealth()` (line ~1242) and streak/inactive panel DOM hooks (`act-streaks`, `act-inactive`) exist in code but are **not wired up** — those panels never render.
+Uses `getParticipationStats()` and `getPlayerStreaks()` internally.
 
 ### Cycle history (`#history`)
 
-`renderHistory()` (line ~1820). Compares the **current cycle** against a selected archived cycle.
+`renderHistory()` (line ~1790). Compares the **current cycle** against a selected archived cycle.
 
 - Archive selector dropdown when `allArchives.length > 1` (`setArchiveCycle()`)
 - Metrics: cycle delta, avg score, days elapsed, most improved, new players
@@ -76,7 +78,7 @@ Defaults to the most recent entry in `ARCHIVE_SHEETS` (index 0).
 
 ### Player profiles (overlay on Leaderboard)
 
-`openProfile()` (line ~1488). Opened by clicking a name on leaderboard, contest, history, activity chart labels, or premium table. Deep-linkable via `#leaderboard?player=Name` (`getUrlPlayer()` / `setUrlPlayer()`, lines ~2211–2216).
+`openProfile()` (line ~1458). Opened by clicking a name on leaderboard, contest, history, activity panels, or premium table. Deep-linkable via `#leaderboard?player=Name` (`getUrlPlayer()` / `setUrlPlayer()`, lines ~2182–2187).
 
 - Header stats: rank, percentile, total points, vs avg, Epic Monster + rank, pts/day, vs last cycle pace
 - Deterministic hero portrait (`HERO_PORTRAITS` / `getPortrait()`, line ~593)
@@ -90,12 +92,13 @@ Prev/next player navigation. Back button calls `closeProfile()`.
 
 ### Premium (`#premium` — hidden)
 
-`renderPremium()` (line ~2006). Not in tab bar or bottom nav; navigate to `#premium` directly.
+`renderPremium()` (line ~1976). Not in tab bar or bottom nav; navigate to `#premium` directly.
 
-- Clan-wide premium chest totals and per-type breakdown bars
-- Per-player table: each premium chest type, total chest count, premium points
+- Metric cards: premium points total, **estimated spend** (`fmtUsd(grandUsd)`), **top spender**, players active
+- Per-type breakdown bars with estimated USD, points per chest, and pack price (`fmtUsd(c.usd)/pack`)
+- Per-player table: each premium chest type, total chest count, premium points, **Est. $** column (`fmtUsd(premUsd)`)
 
-Premium types and pack pricing are defined in `PREMIUM_CHEST_COLS` (lines ~560–567). `chestUsd()` (line ~569) estimates spend as `floor(count/3) * usdPerPack` and players are sorted by `premUsd`, but **USD values are not displayed** in the tab UI — only chest counts and points are rendered. `fmtUsd()` and `grandUsd` are computed but unused in the HTML output.
+Premium types and pack pricing are defined in `PREMIUM_CHEST_COLS` (lines ~560–567). `chestUsd()` (line ~569) estimates spend as `floor(count/3) * usdPerPack`; `fmtUsd()` (line ~570) formats dollar strings. Players are sorted by `premUsd`.
 
 ### Other UI (not separate tabs)
 
@@ -133,16 +136,16 @@ Current archives (newest first):
 ### What each source provides
 
 - **Main tab (`GID`)** — current-cycle player names, total points, and per-chest-type counts. Parsed by `buildPlayers()` (line ~608): name at column index 2, points at index 3, player rows start at row 6. Cycle label extracted by `extractCycleLabel()` from header rows.
-- **Log tab (`LOG_GID`)** — timestamped chest events. Parsed by `parseLogEvents()` (line ~651): clean name col 6, type col 7, timestamp col 5 (fallback col 4). Point values mapped via `LOG_TYPE_PTS` (built from `CHEST_COLS` only — premium types are not in the log points map).
+- **Log tab (`LOG_GID`)** — timestamped chest events. Parsed by `parseLogEvents()` (line ~652): clean name col 6, type col 7, timestamp col 5 (fallback col 4). Point values mapped via `LOG_TYPE_PTS` (lines ~628–630), built from both `CHEST_COLS` and `PREMIUM_CHEST_COLS`. Log type strings match column names (e.g. `Magic Chest`, `Golden Chest`).
 - **Archive sheets** — same layout as the main tab. Loaded in parallel by `loadArchiveData()` (line ~680). Cycle label read from `rows[0].c[2]`; duration estimated by `parseCycleDays()`.
 
 On each full load, `loadData()` fetches the main sheet first, then `loadLogData()` and `loadArchiveData()` in parallel — **1 + N + 1** gviz requests where N = `ARCHIVE_SHEETS.length` (currently 4 total).
 
 ## Architecture notes
 
-- **Single file** — everything lives in `index.html` (~2237 lines). No bundler, no local npm dependencies at runtime.
+- **Single file** — everything lives in `index.html` (~2208 lines). No bundler, no local npm dependencies at runtime.
 - **CDN dependencies** — ECharts 5.4.3, Tabler Icons 3.19.0, Google Fonts (DM Sans, DM Mono).
-- **Hash routing** — `activateTab()` (line ~2081) syncs tab visibility, desktop tabs, bottom nav, and `history.replaceState`. Valid hashes: `overview`, `leaderboard`, `contest`, `chests`, `compare`, `activity`, `history`, `premium`. Leaderboard profiles add `?player=` query param.
+- **Hash routing** — `activateTab()` (line ~2052) syncs tab visibility, desktop tabs, bottom nav, and `history.replaceState`. Valid hashes: `overview`, `leaderboard`, `contest`, `chests`, `compare`, `activity`, `history`, `premium`. Leaderboard profiles add `?player=` query param.
 - **Auto-refresh** — `setInterval` countdown in `startAutoRefresh()` (line ~749). Silent refreshes (`loadData(true)`) skip re-rendering leaderboard and compare (and profile) to avoid disrupting interaction; other tabs still re-render.
 - **PWA** — manifest injected as a blob URL (skull SVG icon in header and manifest). `apple-mobile-web-app-*` meta tags present.
 - **SEO** — `<meta name="robots" content="noindex, nofollow">` (line 5).
@@ -199,9 +202,7 @@ To deploy manually: push to the connected Netlify branch, or drag-and-drop `inde
 - **Hardcoded column indices** — `CHEST_COLS`, `PREMIUM_CHEST_COLS`, and `buildPlayers()` (`nameIdx=2`, `ptsIdx=3`) assume a fixed sheet layout. Reordering or inserting columns will break parsing until the `col` values are updated.
 - **Log column indices** — `parseLogEvents()` hardcodes cols 4–7 for timestamps, name, and type.
 - **Slow initial load** — the browser fires multiple live gviz requests on every load/refresh (main + log + each archive). Expect several seconds, especially on mobile.
-- **Log points mapping** — `LOG_TYPE_PTS` is built from `CHEST_COLS` only; premium chest events in the log get 0 points unless the type string matches a standard chest name.
-- **Premium USD** — spend estimation logic exists (`chestUsd`, `premUsd`) but is not shown in the UI; only used for sort order.
-- **Dead code** — `renderOverviewHealth()` is defined but never called; activity-tab streak/inactive panels reference DOM elements that `renderActivity()` does not create.
+- **Log type labels** — `LOG_TYPE_PTS` keys must match the clean `TYPE` strings in the log tab (col 7). If the sheet uses different labels, add explicit mappings rather than assuming names match `CHEST_COLS` / `PREMIUM_CHEST_COLS`.
 
 ### Unverified
 
