@@ -2028,8 +2028,8 @@ function renderPremium(){
 	// Metric cards
 	var mHtml='<div class="metrics">'
 		+'<div class="metric"><div class="label">Premium pts total</div><div class="val">'+grandPts.toLocaleString()+'</div><div class="sub">across all players</div></div>'
-		+'<div class="metric"><div class="label">Chests opened</div><div class="val">'+grandTotal.toLocaleString()+'</div><div class="sub">premium types</div></div>'
-		+'<div class="metric"><div class="label">Top collector</div><div class="val" style="font-size:var(--fs-lg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(players[0]?players[0].name.split(' ')[0]:'—')+'</div><div class="sub">'+(players[0]?players[0].premPts.toLocaleString()+' pts':'')+'</div></div>'
+		+'<div class="metric"><div class="label">Estimated spend</div><div class="val">'+fmtUsd(grandUsd)+'</div><div class="sub">clan total</div></div>'
+		+'<div class="metric"><div class="label">Top spender</div><div class="val" style="font-size:var(--fs-lg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(players[0]?players[0].name.split(' ')[0]:'—')+'</div><div class="sub">'+(players[0]?fmtUsd(players[0].premUsd):'')+'</div></div>'
 		+'<div class="metric"><div class="label">Players active</div><div class="val">'+players.length+'</div><div class="sub">with premium chests</div></div>'
 		+'</div>';
 
@@ -2041,7 +2041,7 @@ function renderPremium(){
 			+'<span class="bar-label">'+c.name+'</span>'
 			+'<div class="bar-track"><div class="bar-fill" style="width:'+w+'%;background:'+c.color+'"></div></div>'
 			+'<span class="bar-val">'+c.total.toLocaleString()+'</span>'
-			+'<span style="font-size:var(--fs-xs);color:var(--tx2);margin-left:8px;font-family:var(--mono)">'+(c.pts)+' pts ea</span>'
+			+'<span style="font-size:var(--fs-xs);color:var(--tx2);margin-left:8px;font-family:var(--mono)">'+fmtUsd(c.totalUsd)+' · '+(c.pts)+' pts ea · '+fmtUsd(c.usd)+'/pack</span>'
 			+'</div>';
 	}).join('');
 
@@ -2060,7 +2060,8 @@ function renderPremium(){
 			+'<td style="font-weight:500">'+p.name+'</td>'
 			+chestCells
 			+'<td style="text-align:right;font-family:var(--mono);font-weight:500">'+p.premCount.toLocaleString()+'</td>'
-			+'<td style="text-align:right;font-family:var(--mono);color:#E24B4A;font-weight:600">'+p.premPts.toLocaleString()+'</td>';
+			+'<td style="text-align:right;font-family:var(--mono);color:#E24B4A;font-weight:600">'+p.premPts.toLocaleString()+'</td>'
+			+'<td style="text-align:right;font-family:var(--mono);color:#2d5a0e;font-weight:600">'+fmtUsd(p.premUsd)+'</td>';
 		return tr.outerHTML;
 	}).join('');
 
@@ -2074,7 +2075,7 @@ function renderPremium(){
 		+'<div class="card"><h3>Player premium breakdown</h3>'
 		+'<div class="tbl-scroll"><table class="player-table">'
 		+'<thead><tr><th style="width:36px">#</th><th>Player</th>'+thCells
-		+'<th style="text-align:right">Total</th><th style="text-align:right;color:#E24B4A">Pts</th></tr></thead>'
+		+'<th style="text-align:right">Total</th><th style="text-align:right;color:#E24B4A">Pts</th><th style="text-align:right;color:#2d5a0e">Est. $</th></tr></thead>'
 		+'<tbody>'+rowsHtml+'</tbody></table></div></div>';
 }
 
