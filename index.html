@@ -912,6 +912,14 @@ function renderActivity(){
 				<div id="ec-act-top7d" class="ec-chart" style="height:clamp(200px,24vw,300px)"></div>
 			</div>
 		</div>
+		<div class="charts-row">
+			<div class="card" style="margin-bottom:0">
+				<div id="act-streaks"></div>
+			</div>
+			<div class="card" style="margin-bottom:0">
+				<div id="act-inactive"></div>
+			</div>
+		</div>
 		`;
 
 	requestAnimationFrame(()=>{
@@ -1237,45 +1245,6 @@ function renderOverview(){
 			series:[{type:'bar',data:bCounts.map(v=>({value:v,itemStyle:{color:'#7F77DD',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
 		});
 	});
-}
-
-function renderOverviewHealth(){
-	const part = getParticipationStats();
-	const {hotStreaks, inactive} = getPlayerStreaks();
-
-	// Participation panel
-	const pEl = document.getElementById('overview-participation');
-	if(pEl){
-		const gaugeColor = part.pct24>=80?'#639922':part.pct24>=50?'#EF9F27':'#E24B4A';
-		pEl.innerHTML = '<div class="overview-section-title">Clan participation</div>'
-			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">24h</span>'
-			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct24+'%;background:'+gaugeColor+'"></div></div>'
-			+'<span class="gauge-label">'+part.active24+'/'+part.total+'</span></div>'
-			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">48h</span>'
-			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct48+'%;background:#185FA5"></div></div>'
-			+'<span class="gauge-label">'+part.active48+'/'+part.total+'</span></div>'
-			+'<div class="gauge-wrap"><span style="font-size:var(--fs-xs);color:var(--tx2);width:32px;flex-shrink:0">7d</span>'
-			+'<div class="gauge-track"><div class="gauge-fill" style="width:'+part.pct7d+'%;background:#7F77DD"></div></div>'
-			+'<span class="gauge-label">'+part.active7d+'/'+part.total+'</span></div>'
-			+'<div style="margin-top:10px;font-size:var(--fs-xs);color:var(--tx2)">'
-			+'<span style="color:'+gaugeColor+';font-weight:600">'+part.pct24+'%</span> of clan active in last 24h'
-			+(part.pct24<50?' <span class="status-pill pill-inactive">Low activity</span>':part.pct24<80?' <span class="status-pill pill-idle">Moderate</span>':'<span class="status-pill pill-hot">Strong</span>')
-			+'</div>';
-	}
-
-	// Inactivity panel
-	const iEl = document.getElementById('overview-inactivity');
-	if(iEl && inactive.length){
-		const rows = inactive.slice(0,8).map(s=>{
-			const label = s.hoursAgo===null ? 'No log data' : s.hoursAgo<72 ? s.hoursAgo+'h ago' : Math.floor(s.hoursAgo/24)+'d ago';
-			const pillCls = s.hoursAgo===null||s.hoursAgo>96 ? 'pill-inactive' : 'pill-idle';
-			const esc = s.name.replace(/'/g, "\\'");
-			return '<li><span class="sname" onclick="openProfileFromContest(\''+esc+'\')">'+s.name+'</span>'
-				+'<span class="status-pill '+pillCls+'">'+label+'</span></li>';
-		}).join('');
-		iEl.innerHTML = '<div class="overview-section-title">Inactive players <span style="font-weight:400;letter-spacing:0">— last 48h+</span></div>'
-			+'<ul class="status-list">'+rows+'</ul>';
-	}
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────
