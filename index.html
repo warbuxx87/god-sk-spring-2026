@@ -1754,18 +1754,26 @@ function renderProfileTrend(playerName, hours){
 		return;
 	}
 
-	// Bucket into hourly or 6h intervals
-	const bucketHours = hours<=24?1:6;
+	// 24h view → hourly buckets; 7d view → daily buckets
+	const byDay = hours>24;
 	const buckets={};
 	playerLog.forEach(e=>{
-		const bucketTime=new Date(Math.floor(e.ts/1000/3600/bucketHours)*bucketHours*3600*1000);
+		var bucketTime;
+		if(byDay){
+			// Bucket by calendar day (local midnight)
+			bucketTime=new Date(e.ts.getFullYear(),e.ts.getMonth(),e.ts.getDate());
+		}else{
+			bucketTime=new Date(Math.floor(e.ts/1000/3600)*3600*1000);
+		}
 		const key=bucketTime.toISOString();
 		if(!buckets[key]) buckets[key]={ts:bucketTime,pts:0,count:0};
 		buckets[key].pts+=e.pts;
 		buckets[key].count++;
 	});
 	const bucketArr=Object.values(buckets).sort((a,b)=>a.ts-b.ts);
-	const labels=bucketArr.map(b=>b.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+	const labels=bucketArr.map(b=>byDay
+		? b.ts.toLocaleDateString([],{month:'short',day:'numeric'})
+		: b.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
 	const values=bucketArr.map(b=>b.pts);
 
 	const ct=getOrCreateChart('ec-profile-trend');
