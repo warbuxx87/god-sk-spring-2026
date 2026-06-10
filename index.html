@@ -624,9 +624,10 @@ function buildPlayers(table){
 }
 
 // ── Log data ─────────────────────────────────────────────────────
-// Chest type label in log -> point value mapping (same as CHEST_COLS)
+// Chest type label in log -> point value mapping (same names as CHEST_COLS + PREMIUM_CHEST_COLS)
 const LOG_TYPE_PTS = {};
 CHEST_COLS.forEach(c => { LOG_TYPE_PTS[c.name] = c.pts; });
+PREMIUM_CHEST_COLS.forEach(c => { LOG_TYPE_PTS[c.name] = c.pts; });
 
 function parseGvizDate(cell){
 	// gviz returns dates as string "Date(yyyy,m,d,h,min,s)" (month is 0-indexed)
