@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.1.0...god-sk-spring-2026-v1.2.0) (2026-06-11)
+
+
+### Features
+
+* add changelog modal opened from version tag ([22cad28](https://github.com/warbuxx87/god-sk-spring-2026/commit/22cad28dd5886ee351aec4a0792e61a4379eff1a))
+* align auto-refresh with hourly chest detection batches ([b76b139](https://github.com/warbuxx87/god-sk-spring-2026/commit/b76b1396bea171d58963f7ba5753aee2dbfbeff3))
+
+
+### Bug Fixes
+
+* show full player names in Cycle History table on desktop ([bfff6df](https://github.com/warbuxx87/god-sk-spring-2026/commit/bfff6dfdf87c7c521b6e5216ceb78cb6d148dd8b))
+
 ## [1.1.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.0.1...god-sk-spring-2026-v1.1.0) (2026-06-11)
 
 
