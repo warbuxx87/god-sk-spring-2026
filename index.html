@@ -106,6 +106,16 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
 .player-table tr:last-child td{border-bottom:none}
 .player-table tbody tr:hover td{background:var(--bg2)}
 .player-table tbody tr.clickable{cursor:pointer}
+@media(min-width:768px){
+  .player-table.hist-table{table-layout:auto}
+  .player-table.hist-table th.hist-col-name,
+  .player-table.hist-table td.hist-col-name{
+    min-width:clamp(140px,14vw,240px);
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+  }
+}
 .rank-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;font-size:var(--fs-xs);font-weight:700;font-family:var(--mono)}
 .rank-1{background:#FAC775;color:#412402}.rank-2{background:#D3D1C7;color:#2C2C2A}.rank-3{background:#F5C4B3;color:#4A1B0C}.rank-other{background:var(--bg2);color:var(--tx2)}
 .diff-badge{font-size:var(--fs-xs);padding:3px 9px;border-radius:10px;font-weight:600;font-family:var(--mono)}
@@ -1935,7 +1945,7 @@ function renderHistory(){
 
 	var theadHtml='<thead><tr>'
 		+'<th style="width:48px">#</th>'
-		+'<th class="sortable" onclick="setHistSort(\'name\')" style="cursor:pointer">Player</th>'
+		+'<th class="sortable hist-col-name" onclick="setHistSort(\'name\')" style="cursor:pointer">Player</th>'
 		+'<th class="sortable" onclick="setHistSort(\'cur\')" style="text-align:right;cursor:pointer">Current</th>'
 		+'<th class="sortable" onclick="setHistSort(\'prev\')" style="text-align:right;cursor:pointer">'+cLabel+'</th>'
 		+'<th class="sortable" onclick="setHistSort(\'curPpd\')" style="text-align:right;cursor:pointer">Cur pts/day</th>'
@@ -1947,7 +1957,7 @@ function renderHistory(){
 
 	var tableHtml='<div class="card" style="margin-top:12px">'
 		+'<h3>Full cycle comparison <span style="font-weight:400;color:var(--tx2);font-size:var(--fs-xs)">click headers to sort</span></h3>'
-		+'<div class="tbl-scroll"><table class="player-table">'+theadHtml
+		+'<div class="tbl-scroll"><table class="player-table hist-table">'+theadHtml
 		+'<tbody id="hist-tbody"></tbody></table></div></div>';
 
 	el.innerHTML=selectorHtml+mHtml+chartsHtml+tableHtml;
@@ -2029,7 +2039,7 @@ function renderHistory(){
 				var pc2=p.pace!==null&&p.pace>=0?'above':'below';
 				return '<tr class="clickable" onclick="openProfileFromContest(\'' + es + '\')">'
 					+'<td style="width:48px;color:var(--tx2);font-family:var(--mono);font-size:var(--fs-xs)">'+(i+1)+'</td>'
-					+'<td style="font-weight:500">'+p.name+nt+'</td>'
+					+'<td class="hist-col-name" style="font-weight:500">'+p.name+nt+'</td>'
 					+'<td style="text-align:right;font-family:var(--mono)">'+p.cur.toLocaleString()+'</td>'
 					+'<td style="text-align:right;font-family:var(--mono);color:var(--tx2)">'+(p.prev>0?p.prev.toLocaleString():'&mdash;')+'</td>'
 					+'<td style="text-align:right;font-family:var(--mono);font-weight:500">'+p.curPpd.toLocaleString()+'</td>'
