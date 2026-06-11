@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug Fixes
 
-* remove hidden premium tab reference from public changelog ([fa80e9c](https://github.com/warbuxx87/god-sk-spring-2026/commit/fa80e9c06301cd902e647ea3c3d4ed8c0f77b9e7))
+* remove sensitive details from public changelog ([fa80e9c](https://github.com/warbuxx87/god-sk-spring-2026/commit/fa80e9c06301cd902e647ea3c3d4ed8c0f77b9e7))
 
 ## [1.2.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.1.0...god-sk-spring-2026-v1.2.0) (2026-06-11)
 
@@ -42,8 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Bug Fixes
 
-* display estimated USD spend on the premium tab ([caebde6](https://github.com/warbuxx87/god-sk-spring-2026/commit/caebde61069d305331079ba59b9cb53b7bd9bfee))
-* score premium chest events in log point mapping ([38fbc76](https://github.com/warbuxx87/god-sk-spring-2026/commit/38fbc765524c1aa7ae2a34e0587293e3fd33c647))
+* wire up Activity tab hot-streaks and inactive-player panels
 
 ## [1.0.0] - 2026-06-10
 
