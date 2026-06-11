@@ -648,23 +648,28 @@ CHEST_COLS.forEach(c => { LOG_TYPE_PTS[c.name] = c.pts; });
 PREMIUM_CHEST_COLS.forEach(c => { LOG_TYPE_PTS[c.name] = c.pts; });
 
 function parseGvizDate(cell){
-	// gviz returns dates as string "Date(yyyy,m,d,h,min,s)" (month is 0-indexed)
-	// or as a formatted string in cell.f like "5/28/2026 9:17:33"
+	// Log timestamps are stored as UTC. Parse to absolute Date, display with local formatters.
 	if(!cell || cell.v == null) return null;
 	if(typeof cell.v === 'string'){
 		const dm = cell.v.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
-		if(dm) return new Date(+dm[1], +dm[2], +dm[3], +dm[4], +dm[5], +dm[6]);
-		const d = new Date(cell.v.replace(' ','T'));
+		if(dm) return new Date(Date.UTC(+dm[1], +dm[2], +dm[3], +dm[4], +dm[5], +dm[6]));
+		const d = new Date(cell.v.replace(' ','T')+'Z');
 		if(!isNaN(d)) return d;
 	}
-	// Try formatted value
 	if(cell.f){
-		const d = new Date(cell.f.replace(' ','T'));
+		const f = String(cell.f).trim();
+		const iso = f.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2}):(\d{2})/);
+		if(iso) return new Date(Date.UTC(+iso[1], +iso[2]-1, +iso[3], +iso[4], +iso[5], +iso[6]));
+		const md = f.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2}):(\d{2})/);
+		if(md) return new Date(Date.UTC(+md[3], +md[1]-1, +md[2], +md[4], +md[5], +md[6]));
+		const d = new Date(f.replace(' ','T')+'Z');
 		if(!isNaN(d)) return d;
-		const d2 = new Date(cell.f);
-		if(!isNaN(d2)) return d2;
 	}
 	return null;
+}
+
+function localDateKey(d){
+	return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
 function parseLogEvents(table){
@@ -846,7 +851,7 @@ function getPlayerStreaks(){
 	// For each player, find their last activity timestamp and daily activity buckets
 	const playerDays = {};
 	logEvents.forEach(e=>{
-		const day = e.ts.toISOString().slice(0,10); // YYYY-MM-DD
+		const day = localDateKey(e.ts);
 		if(!playerDays[e.name]) playerDays[e.name]={days:new Set(),lastSeen:e.ts};
 		playerDays[e.name].days.add(day);
 		if(e.ts > playerDays[e.name].lastSeen) playerDays[e.name].lastSeen = e.ts;
@@ -860,7 +865,7 @@ function getPlayerStreaks(){
 		let streak = 0;
 		const d = new Date(now);
 		for(let i=0; i<28; i++){
-			const dayStr = d.toISOString().slice(0,10);
+			const dayStr = localDateKey(d);
 			if(data.days.has(dayStr)) streak++;
 			else if(i>0) break; // gap — stop counting
 			d.setDate(d.getDate()-1);
@@ -1754,7 +1759,8 @@ function renderProfileTrend(playerName, hours){
 			// Bucket by calendar day (local midnight)
 			bucketTime=new Date(e.ts.getFullYear(),e.ts.getMonth(),e.ts.getDate());
 		}else{
-			bucketTime=new Date(Math.floor(e.ts/1000/3600)*3600*1000);
+			var d=new Date(e.ts);
+			bucketTime=new Date(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours());
 		}
 		const key=bucketTime.toISOString();
 		if(!buckets[key]) buckets[key]={ts:bucketTime,pts:0,count:0};
