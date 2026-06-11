@@ -608,6 +608,7 @@ let archiveCycleLabel = 'Last cycle';
 let archiveCycleDays  = null;
 let currentCycleLabel = '';
 let currentCycleDays  = null;
+let clanTotalPts      = null;  // from sheet "Clan Total:" row (fresh each fetch)
 let currentProfileName = null;
 let lbSort   = {col:'rank', dir:'asc'};
 let histSort = {col:'pace', dir:'desc'};
@@ -812,7 +813,7 @@ async function loadArchiveData(){
 	const results = await Promise.all(ARCHIVE_SHEETS.map(async function(sheet){
 		try{
 			const url=`https://docs.google.com/spreadsheets/d/${sheet.id}/gviz/tq?tqx=out:json&gid=${sheet.gid}&t=${Date.now()}`;
-			const res=await fetch(url);
+			const res=await fetch(url,{cache:'no-store'});
 			if(!res.ok) return null;
 			const data=parseGvizResponse(await res.text());
 			const lc=data.table.rows[0]?.c?.[2];
@@ -835,7 +836,7 @@ async function loadArchiveData(){
 async function loadLogData(){
 	const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${LOG_GID}&t=${Date.now()}`;
 	try{
-		const res = await fetch(url);
+		const res = await fetch(url,{cache:'no-store'});
 		if(!res.ok){ console.warn('Log HTTP error', res.status); return; }
 		const raw = await res.text();
 		const data = parseGvizResponse(raw);
@@ -849,10 +850,11 @@ async function loadData(silent=false){
 	if(!silent) setStatus('yellow','Fetching live data...');
 	const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&t=${Date.now()}`;
 	try{
-		const res=await fetch(url);
+		const res=await fetch(url,{cache:'no-store'});
 		if(!res.ok) throw new Error('HTTP '+res.status);
 		const data=parseGvizResponse(await res.text());
 		allPlayers=buildPlayers(data.table);
+		clanTotalPts=extractSheetMetric(data.table,'Clan Total:');
 		currentCycleLabel=extractCycleLabel(data.table);
 		currentCycleDays=parseCycleDays(currentCycleLabel,false);
 		if(allPlayers.length===0) throw new Error('No player rows found');
@@ -1319,7 +1321,8 @@ function updateCompare(){
 // ── OVERVIEW ──────────────────────────────────────────────────────
 function renderOverview(){
 	const sorted=allPlayers.slice().sort((a,b)=>b.pts-a.pts);
-	const total=allPlayers.reduce((s,p)=>s+p.pts,0);
+	const playerSum=allPlayers.reduce((s,p)=>s+p.pts,0);
+	const total=clanTotalPts!=null?clanTotalPts:playerSum;
 	const avg=Math.round(total/allPlayers.length);
 	const above=allPlayers.filter(p=>p.pts>=avg).length;
 	const top10=sorted.slice(0,10);
@@ -1456,6 +1459,14 @@ function parseCycleDays(label,isArchive){
 		if(st>new Date()) st=new Date(yr-1,startMonth,parseInt(nums[0]));
 		var diff=Math.max(Math.floor((new Date()-st)/864e5)+1,1);
 		return diff;
+	}
+	return null;
+}
+
+function extractSheetMetric(table,label){
+	for(var i=0;i<Math.min(table.rows.length,10);i++){
+		var row=table.rows[i];if(!row||!row.c)continue;
+		if(cellStr(row.c[2])===label) return cellNum(row.c[3]);
 	}
 	return null;
 }
