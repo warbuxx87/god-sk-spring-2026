@@ -77,6 +77,23 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
 .auto-badge.live:hover{background:#d5ecc4}
 .status-bar{display:flex;align-items:center;gap:10px;font-size:var(--fs-sm);color:var(--tx2);margin-bottom:clamp(1rem,2vw,1.5rem);padding:10px 16px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--r)}
 .version-tag{margin-left:auto;font-family:var(--mono);font-size:var(--fs-xs);color:var(--tx2);opacity:.75;white-space:nowrap}
+.version-tag-btn{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .15s,opacity .15s}
+.version-tag-btn:hover{opacity:1;text-decoration-color:var(--tx2)}
+.changelog-backdrop{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:clamp(1rem,4vw,2rem)}
+.changelog-backdrop.hidden{display:none}
+.changelog-modal{background:var(--bg);border:1px solid var(--bd2);border-radius:var(--rl);width:min(560px,100%);max-height:min(80vh,720px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.35)}
+.changelog-header{display:flex;align-items:center;justify-content:space-between;padding:clamp(16px,2vw,22px);border-bottom:1px solid var(--bd);flex-shrink:0}
+.changelog-header h2{font-size:var(--fs-lg);font-weight:600;letter-spacing:-0.01em}
+.changelog-close{background:none;border:none;font-size:24px;line-height:1;color:var(--tx2);cursor:pointer;padding:4px 8px;border-radius:var(--r);font-family:var(--font)}
+.changelog-close:hover{background:var(--bg2);color:var(--tx)}
+.changelog-body{overflow-y:auto;padding:clamp(16px,2vw,22px);-webkit-overflow-scrolling:touch}
+.changelog-entry{margin-bottom:clamp(18px,2.5vw,28px)}
+.changelog-entry:last-child{margin-bottom:0;padding-bottom:0}
+.changelog-version{font-size:var(--fs-base);font-weight:600;margin-bottom:4px}
+.changelog-date{font-size:var(--fs-xs);color:var(--tx2);margin-bottom:10px}
+.changelog-type{font-size:var(--fs-xs);font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 6px}
+.changelog-list{margin:0 0 0 1.1em;padding:0}
+.changelog-list li{font-size:var(--fs-sm);color:var(--tx);margin-bottom:5px;line-height:1.5}
 .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .dot-pulse{animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
@@ -407,7 +424,7 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
   <div class="status-bar">
     <span class="dot" id="status-dot" style="background:#EF9F27"></span>
     <span id="status-text">Fetching live data from Google Sheets...</span>
-    <span class="version-tag" title="App version">v1.1.0</span><!-- x-release-please-version -->
+    <span class="version-tag version-tag-btn" title="View changelog" onclick="openChangelog()" role="button" tabindex="0">v1.1.0</span><!-- x-release-please-version -->
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
@@ -426,6 +443,17 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
   <div id="tab-activity" class="hidden"></div>
   <div id="tab-history" class="hidden"></div>
   <div id="tab-premium" class="hidden"></div>
+</div>
+
+<!-- Changelog modal -->
+<div class="changelog-backdrop hidden" id="changelog-backdrop" onclick="if(event.target===this) closeChangelog()">
+  <div class="changelog-modal" role="dialog" aria-labelledby="changelog-title" onclick="event.stopPropagation()">
+    <div class="changelog-header">
+      <h2 id="changelog-title">Changelog</h2>
+      <button type="button" class="changelog-close" onclick="closeChangelog()" aria-label="Close">&times;</button>
+    </div>
+    <div class="changelog-body" id="changelog-body"></div>
+  </div>
 </div>
 
 <!-- PWA install banner (Android/Chrome) -->
@@ -502,6 +530,52 @@ const REFRESH_OFFSET_MS   = REFRESH_OFFSET_MINS * 60 * 1000;
 const REFRESH_RETRY_MS    = REFRESH_RETRY_MINS  * 60 * 1000;
 const REFRESH_MIN_MS      = REFRESH_MIN_MINS    * 60 * 1000;
 const REFRESH_MAX_MS      = REFRESH_MAX_MINS    * 60 * 1000;
+
+// Changelog entries — prepend new releases here
+const CHANGELOG_ENTRIES = [
+	{
+		version: '1.2.0',
+		date: '2026-06-11',
+		changes: [
+			{type:'Added', text:'Smart auto-refresh timed to hourly chest detection (last chest + 65 min, with short retries when batches are late)'},
+			{type:'Added', text:'Changelog modal — click the version number in the status bar'},
+			{type:'Fixed', text:'Cycle History comparison table no longer truncates player names on desktop'},
+			{type:'Changed', text:'Replaced fixed 15-minute refresh interval with batch-aligned scheduling'}
+		]
+	},
+	{
+		version: '1.1.0',
+		date: '2026-06-11',
+		changes: [
+			{type:'Added', text:'Last-chest timestamp as the data freshness indicator'},
+			{type:'Added', text:'15-minute auto-refresh with countdown badge'},
+			{type:'Fixed', text:'Log timestamps parsed as UTC and displayed in the viewer\'s local timezone'},
+			{type:'Changed', text:'Larger typography and chart labels on wide desktop screens (1600px+)'}
+		]
+	},
+	{
+		version: '1.0.1',
+		date: '2026-06-10',
+		changes: [
+			{type:'Fixed', text:'Premium tab now shows estimated USD spend per player and per chest type'},
+			{type:'Fixed', text:'Premium chest events scored correctly in Activity and profile log trends'},
+			{type:'Changed', text:'Activity tab hot-streaks and inactive-player panels wired up'}
+		]
+	},
+	{
+		version: '1.0.0',
+		date: '2026-06-10',
+		changes: [
+			{type:'Added', text:'GoD SK Spring 2026 clan dashboard — Overview, Leaderboard, Contest, Chests, Compare, Activity, and Cycle History tabs'},
+			{type:'Added', text:'Live Google Sheets data via gviz with player profiles and deep links'},
+			{type:'Added', text:'Cycle History with multi-cycle archive selector and comparison table'},
+			{type:'Added', text:'Per-player cross-cycle performance chart on profiles'},
+			{type:'Added', text:'Hidden #premium tab with premium chest counts and USD estimates'},
+			{type:'Added', text:'Hash-based tab routing, PWA install support, and GoD skull branding'},
+			{type:'Added', text:'Semantic versioning with Release Please automation'}
+		]
+	}
+];
 
 // Players to exclude from display (old names / duplicates)
 // Key = name to hide, Value = current canonical name (for log lookup)
@@ -2268,6 +2342,49 @@ function setUrlPlayer(name){
 	if(name) history.replaceState(null,'', base + '?player=' + encodeURIComponent(name));
 	else history.replaceState(null,'', base);
 }
+
+// ── Changelog modal ───────────────────────────────────────────────
+function renderChangelogContent(){
+	var body=document.getElementById('changelog-body');
+	if(!body) return;
+	body.innerHTML=CHANGELOG_ENTRIES.map(function(entry){
+		var grouped={};
+		entry.changes.forEach(function(c){
+			if(!grouped[c.type]) grouped[c.type]=[];
+			grouped[c.type].push(c.text);
+		});
+		var sections=Object.keys(grouped).map(function(type){
+			return '<div class="changelog-type">'+type+'</div>'
+				+'<ul class="changelog-list">'
+				+grouped[type].map(function(t){return '<li>'+t+'</li>';}).join('')
+				+'</ul>';
+		}).join('');
+		return '<div class="changelog-entry">'
+			+'<div class="changelog-version">'+entry.version+'</div>'
+			+'<div class="changelog-date">'+entry.date+'</div>'
+			+sections
+			+'</div>';
+	}).join('');
+}
+
+function openChangelog(){
+	renderChangelogContent();
+	var el=document.getElementById('changelog-backdrop');
+	if(el) el.classList.remove('hidden');
+	document.body.style.overflow='hidden';
+}
+
+function closeChangelog(){
+	var el=document.getElementById('changelog-backdrop');
+	if(el) el.classList.add('hidden');
+	document.body.style.overflow='';
+}
+
+document.addEventListener('keydown',function(e){
+	if(e.key==='Escape' && document.getElementById('changelog-backdrop') && !document.getElementById('changelog-backdrop').classList.contains('hidden')){
+		closeChangelog();
+	}
+});
 
 // ── Boot ─────────────────────────────────────────────────────────
 loadData().then(()=>{
