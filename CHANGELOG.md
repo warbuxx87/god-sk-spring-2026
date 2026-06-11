@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.2.1...god-sk-spring-2026-v1.2.2) (2026-06-11)
+
+
+### Bug Fixes
+
+* scrub premium references from CHANGELOG.md and sync modal ([1a9711e](https://github.com/warbuxx87/god-sk-spring-2026/commit/1a9711ed70037828ec14f5cc947cd5bc09fcbacf))
+
 ## [1.2.1](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.2.0...god-sk-spring-2026-v1.2.1) (2026-06-11)
 
 
