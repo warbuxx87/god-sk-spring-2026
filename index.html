@@ -40,6 +40,22 @@
     --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.17);
   }
 }
+@media(min-width:1600px){
+  html{font-size:18px}
+  :root{
+    --fs-xs:13px;--fs-sm:15px;--fs-base:17px;
+    --fs-lg:22px;--fs-xl:28px;--fs-2xl:34px;
+  }
+  .page{max-width:1320px}
+}
+@media(min-width:2000px){
+  html{font-size:20px}
+  :root{
+    --fs-xs:14px;--fs-sm:16px;--fs-base:18px;
+    --fs-lg:24px;--fs-xl:30px;--fs-2xl:38px;
+  }
+  .page{max-width:1480px}
+}
 html{font-size:16px;-webkit-text-size-adjust:100%}
 body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background:var(--bg3);color:var(--tx);min-height:100vh;-webkit-font-smoothing:antialiased}
 .page{max-width:1120px;margin:0 auto;padding:clamp(1.25rem,3vw,2.5rem) clamp(1rem,4vw,2rem) 5rem}
@@ -510,6 +526,8 @@ const EC_TEXT2   = () => isDark() ? '#f2f0e8' : '#141412';
 const EC_SPLIT   = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 const EC_BG      = () => isDark() ? '#1a1a18' : '#ffffff';
 const EC_TOOLTIP = () => isDark() ? '#222220' : '#ffffff';
+const EC_SCALE = () => (window.innerWidth >= 2000 ? 1.35 : window.innerWidth >= 1600 ? 1.2 : 1);
+const ecFs = (n) => Math.round(n * EC_SCALE());
 
 // ── Column layout (hardcoded from confirmed gviz structure) ───────
 const CHEST_COLS = [
@@ -785,7 +803,7 @@ const TOOLTIP_STYLE = ()=>({
 	backgroundColor: EC_TOOLTIP(),
 	borderColor: isDark()?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.1)',
 	borderWidth:1,
-	textStyle:{color:EC_TEXT2(),fontFamily:'DM Sans, sans-serif',fontSize:13}
+	textStyle:{color:EC_TEXT2(),fontFamily:'DM Sans, sans-serif',fontSize:ecFs(13)}
 });
 const CHART_BG = '#000000';
 
@@ -988,8 +1006,8 @@ function renderActivity(){
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/><b>${p[0].value}</b> chests`},
 			grid:{left:8,right:16,top:8,bottom:50,containLabel:true},
-			xAxis:{type:'category',data:hourLabels,axisLabel:{color:EC_TEXT(),fontSize:9,rotate:45,interval:2},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
-			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:10},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:hourLabels,axisLabel:{color:EC_TEXT(),fontSize:ecFs(9),rotate:45,interval:2},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:ecFs(10)},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',data:hourCounts.map(v=>({value:v,itemStyle:{color:'#185FA5',borderRadius:[3,3,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
 		});
 
@@ -1002,11 +1020,11 @@ function renderActivity(){
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
 			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
-			xAxis:{type:'category',data:top24.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
-			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:top24.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',data:top24.map((x,i)=>({value:x[1],itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#1D9E75',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
 		});
-		else if(c24) c24.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 24h',fill:EC_TEXT(),fontSize:14}}]});
+		else if(c24) c24.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 24h',fill:EC_TEXT(),fontSize:ecFs(14)}}]});
 
 		// Top earners last 7d
 		const pts7d = {};
@@ -1017,11 +1035,11 @@ function renderActivity(){
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
 			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
-			xAxis:{type:'category',data:top7d.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
-			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:top7d.map(x=>x[0]),axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',data:top7d.map((x,i)=>({value:x[1],itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#D4537E',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
 		});
-		else if(c7d) c7d.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 7 days',fill:EC_TEXT(),fontSize:14}}]});
+		else if(c7d) c7d.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No activity in last 7 days',fill:EC_TEXT(),fontSize:ecFs(14)}}]});
 
 	});
 }
@@ -1130,8 +1148,8 @@ function updateCompare(){
 		if(cr) cr.setOption({
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'item'},
-			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
-			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxG[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:10},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:ecFs(11),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxG[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:ecFs(10)},axisLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'radar',data:[
 				{name:nameA,value:groupPtsA,areaStyle:{color:'rgba(24,95,165,0.2)'},lineStyle:{color:'#185FA5',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#185FA5'}},
 				{name:nameB,value:groupPtsB,areaStyle:{color:'rgba(212,83,126,0.2)'},lineStyle:{color:'#D4537E',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#D4537E'}}
@@ -1143,10 +1161,10 @@ function updateCompare(){
 		if(cb) cb.setOption({
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'}},
-			legend:{top:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10,data:[{name:nameA,itemStyle:{color:'#185FA5'}},{name:nameB,itemStyle:{color:'#D4537E'}}]},
+			legend:{top:0,textStyle:{color:EC_TEXT(),fontSize:ecFs(11),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10,data:[{name:nameA,itemStyle:{color:'#185FA5'}},{name:nameB,itemStyle:{color:'#D4537E'}}]},
 			grid:{left:8,right:8,top:40,bottom:60,containLabel:true},
-			xAxis:{type:'category',data:GROUP_NAMES,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:25,interval:0},splitLine:{show:false}},
-			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:GROUP_NAMES,axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:25,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[
 				{name:nameA,type:'bar',data:groupPtsA,itemStyle:{color:'#185FA5',borderRadius:[3,3,0,0]},barMaxWidth:28},
 				{name:nameB,type:'bar',data:groupPtsB,itemStyle:{color:'#D4537E',borderRadius:[3,3,0,0]},barMaxWidth:28}
@@ -1218,8 +1236,8 @@ function renderOverview(){
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<b>${p[0].name}</b><br/>${p[0].value.toLocaleString()} pts`},
 			grid:{left:8,right:16,top:8,bottom:60,containLabel:true},
-			xAxis:{type:'category',data:top10.map(p=>p.name),axisLabel:{color:EC_TEXT(),fontSize:11,rotate:30,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
-			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:11,formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:top10.map(p=>p.name),axisLabel:{color:EC_TEXT(),fontSize:ecFs(11),rotate:30,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(11),formatter:v=>v>=1000?(v/1000).toFixed(0)+'k':v},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',data:top10.map((p,i)=>({value:p.pts,itemStyle:{color:i===0?'#FAC775':i===1?'#D3D1C7':i===2?'#F5C4B3':'#185FA5',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.85}}}]
 		});
 
@@ -1228,10 +1246,10 @@ function renderOverview(){
 		if(c2) c2.setOption({
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'item',formatter:p=>`${p.name}<br/><b>${p.value.toLocaleString()}</b> chests (${p.percent.toFixed(1)}%)`},
-			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:ecFs(11),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
 			series:[{type:'pie',radius:['42%','72%'],center:['38%','50%'],avoidLabelOverlap:true,
 				label:{show:false},
-				emphasis:{label:{show:true,fontSize:13,fontWeight:600,color:EC_TEXT2()}},
+				emphasis:{label:{show:true,fontSize:ecFs(13),fontWeight:600,color:EC_TEXT2()}},
 				data:groupTotals.map(g=>({name:g.label,value:g.total,itemStyle:{color:g.color}}))}]
 		});
 
@@ -1241,8 +1259,8 @@ function renderOverview(){
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`${p[0].name}<br/><b>${p[0].value}</b> players`},
 			grid:{left:8,right:16,top:8,bottom:40,containLabel:true},
-			xAxis:{type:'category',data:bLabels,axisLabel:{color:EC_TEXT(),fontSize:11},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
-			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:11},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			xAxis:{type:'category',data:bLabels,axisLabel:{color:EC_TEXT(),fontSize:ecFs(11)},axisLine:{lineStyle:{color:EC_SPLIT()}},splitLine:{show:false}},
+			yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:ecFs(11)},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',data:bCounts.map(v=>({value:v,itemStyle:{color:'#7F77DD',borderRadius:[4,4,0,0]}})),emphasis:{itemStyle:{opacity:0.8}}}]
 		});
 	});
@@ -1611,8 +1629,8 @@ function openProfile(playerName){
 		if(cr) cr.setOption({
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'item'},
-			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
-			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxGroupPts[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:10},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+			legend:{bottom:0,textStyle:{color:EC_TEXT(),fontSize:ecFs(11),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			radar:{indicator:GROUP_NAMES.map((n,i)=>({name:n,max:maxGroupPts[i]*1.2})),splitLine:{lineStyle:{color:EC_SPLIT()}},splitArea:{show:false},axisName:{color:EC_TEXT(),fontSize:ecFs(10)},axisLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'radar',data:[
 				{name:'This player',value:playerGroupPts,areaStyle:{color:'rgba(24,95,165,0.15)'},lineStyle:{color:'#185FA5',width:2},symbol:'circle',symbolSize:5,itemStyle:{color:'#185FA5'}},
 				{name:'Clan avg',value:avgGroupPts,areaStyle:{color:'rgba(127,119,221,0.08)'},lineStyle:{color:'#7F77DD',width:1.5,type:'dashed'},symbol:'circle',symbolSize:4,itemStyle:{color:'#7F77DD'}}
@@ -1624,10 +1642,10 @@ function openProfile(playerName){
 		if(cp&&groupBreakdown.length) cp.setOption({
 			backgroundColor:CHART_BG,
 			tooltip:{...TOOLTIP_STYLE(),trigger:'item',formatter:p=>`${p.name}<br/><b>${p.value.toLocaleString()}</b> pts (${p.percent.toFixed(1)}%)`},
-			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:11,fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			legend:{orient:'vertical',right:0,top:'middle',textStyle:{color:EC_TEXT(),fontSize:ecFs(11),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
 			series:[{type:'pie',radius:['40%','70%'],center:['38%','50%'],
 				label:{show:false},
-				emphasis:{label:{show:true,fontSize:13,fontWeight:600,color:EC_TEXT2()}},
+				emphasis:{label:{show:true,fontSize:ecFs(13),fontWeight:600,color:EC_TEXT2()}},
 				data:groupBreakdown.map(x=>({name:x.g,value:x.groupPts,itemStyle:{color:x.color}}))}]
 		});
 		// Trend chart
@@ -1707,11 +1725,11 @@ function renderProfileCycles(playerName){
 			return s;
 		}}),
 		grid:{left:8,right:16,top:16,bottom:48,containLabel:true},
-		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:labels.length>4?25:0,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}}},
-		yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:labels.length>4?25:0,interval:0},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+		yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 		series:[{type:'bar',data:vals,barMaxWidth:48,
 			itemStyle:{color:barColor,borderRadius:[5,5,0,0]},
-			label:{show:true,position:'top',color:EC_TEXT2(),fontSize:10,fontFamily:'DM Sans',formatter:function(d){return d.value>=1000?(d.value/1000).toFixed(1)+'k':d.value;}}
+			label:{show:true,position:'top',color:EC_TEXT2(),fontSize:ecFs(10),fontFamily:'DM Sans',formatter:function(d){return d.value>=1000?(d.value/1000).toFixed(1)+'k':d.value;}}
 		}]
 	});
 }
@@ -1723,7 +1741,7 @@ function renderProfileTrend(playerName, hours){
 
 	if(!playerLog.length){
 		const ct=getOrCreateChart('ec-profile-trend');
-		if(ct) ct.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No log data for this window',fill:EC_TEXT(),fontSize:13}}]});
+		if(ct) ct.setOption({backgroundColor:CHART_BG,graphic:[{type:'text',left:'center',top:'middle',style:{text:'No log data for this window',fill:EC_TEXT(),fontSize:ecFs(13)}}]});
 		return;
 	}
 
@@ -1754,8 +1772,8 @@ function renderProfileTrend(playerName, hours){
 		backgroundColor:CHART_BG,
 		tooltip:{...TOOLTIP_STYLE(),trigger:'axis',formatter:p=>`${p[0].name}<br/><b>+${p[0].value}</b> pts`},
 		grid:{left:8,right:16,top:8,bottom:40,containLabel:true},
-		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:10,rotate:hours>24?30:0},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
-		yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:10},splitLine:{lineStyle:{color:EC_SPLIT()}}},
+		xAxis:{type:'category',data:labels,axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:hours>24?30:0},splitLine:{show:false},axisLine:{lineStyle:{color:EC_SPLIT()}}},
+		yAxis:{type:'value',minInterval:1,axisLabel:{color:EC_TEXT(),fontSize:ecFs(10)},splitLine:{lineStyle:{color:EC_SPLIT()}}},
 		series:[{type:'line',data:values,smooth:true,symbol:'circle',symbolSize:5,
 			itemStyle:{color:'#185FA5'},lineStyle:{color:'#185FA5',width:2},
 			areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(24,95,165,0.3)'},{offset:1,color:'rgba(24,95,165,0.02)'}]}}}]
@@ -1892,8 +1910,8 @@ function renderHistory(){
 				formatter:function(p){return'<b>'+p[0].name+'</b><br/>'+(p[0].value>=0?'+':'')+p[0].value.toLocaleString()+' pts';}}),
 			grid:{left:8,right:16,top:8,bottom:70,containLabel:true},
 			xAxis:{type:'category',data:combined.map(function(p){return p.name.length>12?p.name.slice(0,12)+'…':p.name;}),
-				axisLabel:{color:EC_TEXT(),fontSize:10,rotate:35,interval:0},splitLine:{show:false}},
-			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:10,
+				axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),
 				formatter:function(v){return Math.abs(v)>=1000?(v/1000).toFixed(0)+'k':v;}},
 				splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[{type:'bar',
@@ -1911,11 +1929,11 @@ function renderHistory(){
 			tooltip:Object.assign({},TOOLTIP_STYLE(),{trigger:'item',
 				formatter:function(p){return'<b>'+p.name+'</b><br/>Last: '+p.value[0].toLocaleString()+'<br/>Now: '+p.value[1].toLocaleString();}}),
 			grid:{left:8,right:16,top:16,bottom:40,containLabel:true},
-			xAxis:{type:'value',name:'Last cycle',nameTextStyle:{color:EC_TEXT(),fontSize:10},
-				axisLabel:{color:EC_TEXT(),fontSize:9,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
+			xAxis:{type:'value',name:'Last cycle',nameTextStyle:{color:EC_TEXT(),fontSize:ecFs(10)},
+				axisLabel:{color:EC_TEXT(),fontSize:ecFs(9),formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
 				splitLine:{lineStyle:{color:EC_SPLIT()}}},
-			yAxis:{type:'value',name:'Current',nameTextStyle:{color:EC_TEXT(),fontSize:10},
-				axisLabel:{color:EC_TEXT(),fontSize:9,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
+			yAxis:{type:'value',name:'Current',nameTextStyle:{color:EC_TEXT(),fontSize:ecFs(10)},
+				axisLabel:{color:EC_TEXT(),fontSize:ecFs(9),formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
 				splitLine:{lineStyle:{color:EC_SPLIT()}}},
 			series:[
 				{type:'line',data:[[0,0],[maxVal,maxVal]],lineStyle:{color:EC_SPLIT(),type:'dashed',width:1},symbol:'none',tooltip:{show:false},z:1},
