@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.3.0...god-sk-spring-2026-v1.3.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* restore cache-busting on gviz fetches so data isn't stale ([283a126](https://github.com/warbuxx87/god-sk-spring-2026/commit/283a12696b5eebcda4a056b32a70d0f07727a749))
+
 ## [1.3.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.2.2...god-sk-spring-2026-v1.3.0) (2026-06-11)
 
 
