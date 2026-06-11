@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.0.1...god-sk-spring-2026-v1.1.0) (2026-06-11)
+
+
+### Features
+
+* refresh every 15 minutes and show last chest time ([13db664](https://github.com/warbuxx87/god-sk-spring-2026/commit/13db66437f9dcebed96c3db835ca41eef27056ee))
+
+
+### Bug Fixes
+
+* parse log timestamps as UTC and display in local time ([52a4db5](https://github.com/warbuxx87/god-sk-spring-2026/commit/52a4db52db41afb8869cd9cbfb2266a489fbc29e))
+
 ## [1.0.1](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.0.0...god-sk-spring-2026-v1.0.1) (2026-06-10)
 
 
