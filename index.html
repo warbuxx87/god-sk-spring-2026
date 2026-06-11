@@ -390,7 +390,7 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
     </div>
     <div class="header-right">
       <button class="auto-badge" id="auto-badge" onclick="manualRefresh()" title="Click to refresh now">
-        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px"></i> <span id="countdown">15</span><span id="countdown-unit">m</span>
+        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px"></i> <span id="countdown">—</span><span id="countdown-unit"></span>
       </button>
     </div>
   </div>
@@ -484,7 +484,14 @@ const ARCHIVE_SHEETS = [
 	{id:'1LxTP1f4JWB79z8O-SgU3gClWniDF6LeXcBXFh8Kcwbc', gid:'181827579'},  // older
 ];
 const ARCHIVE_GID = '181827579';
-const AUTO_REFRESH_SECS = 900;
+const REFRESH_OFFSET_MINS = 65;  // schedule after last chest + this (scraper slack)
+const REFRESH_RETRY_MINS  = 5;   // short retry when batch overdue or unchanged
+const REFRESH_MIN_MINS    = 2;   // never refresh sooner than this
+const REFRESH_MAX_MINS    = 65;  // never wait longer than this
+const REFRESH_OFFSET_MS   = REFRESH_OFFSET_MINS * 60 * 1000;
+const REFRESH_RETRY_MS    = REFRESH_RETRY_MINS  * 60 * 1000;
+const REFRESH_MIN_MS      = REFRESH_MIN_MINS    * 60 * 1000;
+const REFRESH_MAX_MS      = REFRESH_MAX_MINS    * 60 * 1000;
 
 // Players to exclude from display (old names / duplicates)
 // Key = name to hide, Value = current canonical name (for log lookup)
@@ -516,8 +523,8 @@ let lbSort   = {col:'rank', dir:'asc'};
 let histSort = {col:'pace', dir:'desc'};
 let activeTab = 'overview';  // track current tab so silent refresh doesn't disrupt
 let countdownTimer = null;
-let autoRefreshTimer = null;
-let secondsLeft = AUTO_REFRESH_SECS;
+let nextRefreshAt = null;
+let prevLastChestTs = null;
 
 // ── Detect dark mode for ECharts ──────────────────────────────────
 const isDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -765,6 +772,7 @@ async function loadData(silent=false){
 		setStatus('green',`Live — ${allPlayers.length} players · ${logEvents.length} log events · Last chest: ${chestStr}`);
 		document.getElementById('last-updated').textContent=`Last chest: ${chestStr} · ${allPlayers.length} players`;
 		document.getElementById('auto-badge').className='auto-badge live';
+		scheduleSmartRefresh();
 		renderAll(silent);
 	}catch(e){
 		setStatus('red','Fetch failed: '+e.message+' — check sheet is "Anyone with link can view"');
@@ -780,17 +788,33 @@ function setStatus(color,text){
 	document.getElementById('status-text').textContent=text;
 }
 
-// ── Auto-refresh ──────────────────────────────────────────────────
-function startAutoRefresh(){
+// ── Smart auto-refresh (aligned to hourly chest batches) ──────────
+function clampRefreshDelay(ms){
+	return Math.max(REFRESH_MIN_MS, Math.min(REFRESH_MAX_MS, ms));
+}
+
+function computeSmartRefreshDelay(){
+	const lastChest=getLatestLogChestTs();
+	const now=Date.now();
+	if(!lastChest) return clampRefreshDelay(REFRESH_RETRY_MS);
+	if(prevLastChestTs && lastChest.getTime()<=prevLastChestTs.getTime()){
+		return clampRefreshDelay(REFRESH_RETRY_MS);
+	}
+	var delay=lastChest.getTime()+REFRESH_OFFSET_MS-now;
+	if(delay<=0) return clampRefreshDelay(REFRESH_RETRY_MS);
+	return clampRefreshDelay(delay);
+}
+
+function scheduleSmartRefresh(){
 	clearInterval(countdownTimer);
-	clearTimeout(autoRefreshTimer);
-	secondsLeft=AUTO_REFRESH_SECS;
+	var delay=computeSmartRefreshDelay();
+	prevLastChestTs=getLatestLogChestTs();
+	nextRefreshAt=Date.now()+delay;
 	updateCountdown();
-	countdownTimer=setInterval(()=>{
-		secondsLeft--;
+	countdownTimer=setInterval(function(){
 		updateCountdown();
-		if(secondsLeft<=0){
-			secondsLeft=AUTO_REFRESH_SECS;
+		if(Date.now()>=nextRefreshAt){
+			clearInterval(countdownTimer);
 			loadData(true);
 		}
 	},1000);
@@ -799,18 +823,23 @@ function startAutoRefresh(){
 function updateCountdown(){
 	const el=document.getElementById('countdown');
 	const unit=document.getElementById('countdown-unit');
-	if(!el) return;
-	if(secondsLeft>=60){
-		el.textContent=Math.ceil(secondsLeft/60);
+	const badge=document.getElementById('auto-badge');
+	if(!el||!nextRefreshAt) return;
+	const secsLeft=Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
+	if(badge){
+		badge.title='Click to refresh now · Next auto-refresh '+new Date(nextRefreshAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+	}
+	if(secsLeft>=60){
+		el.textContent=Math.ceil(secsLeft/60);
 		if(unit) unit.textContent='m';
 	}else{
-		el.textContent=secondsLeft;
+		el.textContent=secsLeft;
 		if(unit) unit.textContent='s';
 	}
 }
 
 function manualRefresh(){
-	secondsLeft=AUTO_REFRESH_SECS;
+	clearInterval(countdownTimer);
 	loadData(false);
 }
 
@@ -1453,7 +1482,7 @@ function renderContest(){
 	const eTop=buildRanked(allPlayers,p=>epicScore(p),false);
 	const eBot=buildRanked(allPlayers,p=>epicScore(p),true);
 	document.getElementById('tab-contest').innerHTML=`
-		<div class="contest-notice"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Updates automatically every ${Math.round(AUTO_REFRESH_SECS/60)} min — or hit Refresh now.</div>
+		<div class="contest-notice"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Refreshes after each hourly chest batch — or hit Refresh now.</div>
 		<div class="contest-grid">
 			${contestTable(oTop,20,'badge-top','Overall Score — Top 20')}
 			${contestTable(oBot,20,'badge-bot','Overall Score — Bottom 20')}
@@ -2232,7 +2261,6 @@ function setUrlPlayer(name){
 
 // ── Boot ─────────────────────────────────────────────────────────
 loadData().then(()=>{
-	startAutoRefresh();
 	const _validTabs=['overview','leaderboard','contest','chests','compare','activity','history','premium'];
 	const _hashTab=window.location.hash.replace('#','').split('?')[0].trim();
 	const _startTab=_validTabs.includes(_hashTab)?_hashTab:'overview';
