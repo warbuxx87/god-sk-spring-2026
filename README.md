@@ -1,14 +1,33 @@
 # GoD SK — Spring 2026
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square&logo=opensourceinitiative)](LICENSE)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![ECharts](https://img.shields.io/badge/ECharts-5.4.3-AA344D?style=flat-square)](https://echarts.apache.org/)
+[![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8?style=flat-square&logo=pwa)](index.html)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue?style=flat-square)](CHANGELOG.md)
+[![Netlify](https://img.shields.io/badge/Netlify-deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white)](https://god-sk-spring-2026.netlify.app/)
+
 Internal clan analytics dashboard for **Guardians of Death (GoD)** in *Total Battle*. A single HTML file reads live Google Sheets data and renders performance views for the current cycle.
 
 ## Overview
 
 Self-contained single-file HTML/JS dashboard — vanilla JavaScript, [ECharts](https://echarts.apache.org/) for charts, no build step. On load it fetches one or more Google Sheets via the public **gviz JSON API** and renders clan analytics in the browser.
 
-Deployed on Netlify as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 736).
+Deployed on [Netlify](https://god-sk-spring-2026.netlify.app/) as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 736).
 
-Current version: `1.0.0` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
+Current version: `1.2.0` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
+
+## Tech stack
+
+- **Vanilla JavaScript** — single `index.html`, no framework, no build step
+- **[Apache ECharts](https://echarts.apache.org/)** 5.4.3 — charts (CDN)
+- **[Tabler Icons](https://tabler.io/icons)** 3.19.0 — icon font (CDN)
+- **[Google Fonts](https://fonts.google.com/)** — DM Sans, DM Mono
+- **Google Sheets gviz API** — live data (`/gviz/tq?tqx=out:json`)
+- **Netlify** — static hosting at [god-sk-spring-2026.netlify.app](https://god-sk-spring-2026.netlify.app/)
+- **PWA** — inline manifest blob + `beforeinstallprompt` install banner
+- **[Release Please](https://github.com/googleapis/release-please)** — automated versioning (`.github/workflows/release-please.yml`)
 
 ## Features
 
@@ -208,3 +227,6 @@ To deploy manually: push to the connected Netlify branch, or drag-and-drop `inde
 
 - **Netlify deploy config** — deployment target is inferred from git history (`Initial commit via Netlify`), not from any config file in this repo.
 - **Clan name “Guardians of Death”** — appears in the user-facing title/branding context but is not spelled out in the HTML source; the code uses “GoD SK” throughout.
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Ryan Breen.
