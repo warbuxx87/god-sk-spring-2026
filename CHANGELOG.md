@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.2.2...god-sk-spring-2026-v1.3.0) (2026-06-11)
+
+
+### Features
+
+* add favicon using GoD skull branding ([1f5eb3a](https://github.com/warbuxx87/god-sk-spring-2026/commit/1f5eb3ab244a60f6ebd2faa3a62fcca0f2d4aae3))
+
 ## [1.2.2](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.2.1...god-sk-spring-2026-v1.2.2) (2026-06-11)
 
 
