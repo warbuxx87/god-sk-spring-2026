@@ -390,7 +390,7 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
     </div>
     <div class="header-right">
       <button class="auto-badge" id="auto-badge" onclick="manualRefresh()" title="Click to refresh now">
-        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px"></i> <span id="countdown">180</span>s
+        <i class="ti ti-refresh" style="font-size:12px;vertical-align:-1px"></i> <span id="countdown">15</span><span id="countdown-unit">m</span>
       </button>
     </div>
   </div>
@@ -484,7 +484,7 @@ const ARCHIVE_SHEETS = [
 	{id:'1LxTP1f4JWB79z8O-SgU3gClWniDF6LeXcBXFh8Kcwbc', gid:'181827579'},  // older
 ];
 const ARCHIVE_GID = '181827579';
-const AUTO_REFRESH_SECS = 180;
+const AUTO_REFRESH_SECS = 900;
 
 // Players to exclude from display (old names / duplicates)
 // Key = name to hide, Value = current canonical name (for log lookup)
@@ -672,6 +672,15 @@ function localDateKey(d){
 	return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+function getLatestLogChestTs(){
+	if(!logEvents.length) return null;
+	return logEvents.reduce(function(latest,e){ return e.ts>latest?e.ts:latest; }, logEvents[0].ts);
+}
+
+function formatLogTime(d){
+	return d.toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
 function parseLogEvents(table){
 	const rows = table.rows;
 	const events = [];
@@ -751,8 +760,10 @@ async function loadData(silent=false){
 		currentCycleDays=parseCycleDays(currentCycleLabel,false);
 		if(allPlayers.length===0) throw new Error('No player rows found');
 		await Promise.all([loadLogData(),loadArchiveData()]);
-		setStatus('green',`Live — ${allPlayers.length} players · ${logEvents.length} log events · updated ${new Date().toLocaleTimeString()}`);
-		document.getElementById('last-updated').textContent=`Last refreshed: ${new Date().toLocaleTimeString()} · ${allPlayers.length} players`;
+		const lastChest=getLatestLogChestTs();
+		const chestStr=lastChest?formatLogTime(lastChest):'no log data';
+		setStatus('green',`Live — ${allPlayers.length} players · ${logEvents.length} log events · Last chest: ${chestStr}`);
+		document.getElementById('last-updated').textContent=`Last chest: ${chestStr} · ${allPlayers.length} players`;
 		document.getElementById('auto-badge').className='auto-badge live';
 		renderAll(silent);
 	}catch(e){
@@ -787,7 +798,15 @@ function startAutoRefresh(){
 
 function updateCountdown(){
 	const el=document.getElementById('countdown');
-	if(el) el.textContent=secondsLeft;
+	const unit=document.getElementById('countdown-unit');
+	if(!el) return;
+	if(secondsLeft>=60){
+		el.textContent=Math.ceil(secondsLeft/60);
+		if(unit) unit.textContent='m';
+	}else{
+		el.textContent=secondsLeft;
+		if(unit) unit.textContent='s';
+	}
 }
 
 function manualRefresh(){
@@ -1434,7 +1453,7 @@ function renderContest(){
 	const eTop=buildRanked(allPlayers,p=>epicScore(p),false);
 	const eBot=buildRanked(allPlayers,p=>epicScore(p),true);
 	document.getElementById('tab-contest').innerHTML=`
-		<div class="contest-notice"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Updates automatically every ${AUTO_REFRESH_SECS}s — or hit Refresh now.</div>
+		<div class="contest-notice"><i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:5px" aria-hidden="true"></i>Updates automatically every ${Math.round(AUTO_REFRESH_SECS/60)} min — or hit Refresh now.</div>
 		<div class="contest-grid">
 			${contestTable(oTop,20,'badge-top','Overall Score — Top 20')}
 			${contestTable(oBot,20,'badge-bot','Overall Score — Bottom 20')}
