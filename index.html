@@ -599,8 +599,19 @@ function getPlayerAliases(playerName){
 	return aliases;
 }
 
+function findPlayerInArchive(players, playerName){
+	if(!players||!players.length) return null;
+	var aliases=getPlayerAliases(playerName);
+	for(var i=0;i<aliases.length;i++){
+		var a=aliases[i];
+		var p=players.find(function(x){return x.name===a||x.name.toLowerCase()===a.toLowerCase();});
+		if(p) return p;
+	}
+	return null;
+}
+
 let allPlayers     = [];
-let archivePlayers = [];   // currently-selected archive cycle (defaults to most recent)
+let archivePlayers = [];   // Cycle History tab's selected archive (not used by profile "vs last cycle")
 let allArchives    = [];   // [{label, days, players}] all loaded archive cycles, newest first
 let selectedArchiveIdx = 0;
 let logEvents      = [];
@@ -1641,11 +1652,12 @@ function openProfile(playerName){
 	const pctile=Math.round((1-(rank-1)/allPlayers.length)*100);
 	const epicPts=epicScore(p);
 	const epicRank=allPlayers.slice().sort((a,b)=>epicScore(b)-epicScore(a)).findIndex(x=>x.name===playerName)+1;
-	// Daily pace
+	// Daily pace — always vs most recent completed archive (allArchives[0]), not History tab selection
 	const cDays=(currentCycleDays&&currentCycleDays>0)?currentCycleDays:null;
-	const pDays=(archiveCycleDays&&archiveCycleDays>0)?archiveCycleDays:null;
+	const lastArchive=allArchives.length?allArchives[0]:null;
+	const pDays=(lastArchive&&lastArchive.days>0)?lastArchive.days:null;
 	const curPpd=cDays?Math.round(p.pts/cDays):null;
-	const archiveP=archivePlayers.find(x=>x.name===playerName||x.name.toLowerCase()===playerName.toLowerCase());
+	const archiveP=lastArchive?findPlayerInArchive(lastArchive.players,playerName):null;
 	const prevPpd=(pDays&&archiveP)?Math.round(archiveP.pts/pDays):null;
 	const paceDiff=(curPpd!==null&&prevPpd!==null)?curPpd-prevPpd:null;
 	const initials=playerName.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
