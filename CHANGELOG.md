@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-06-28
+
+### Changed
+
+- Cycle History archive list updated with June 17–27 completed cycle
+
 ## [1.3.2](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.3.1...god-sk-spring-2026-v1.3.2) (2026-06-21)
 
 
