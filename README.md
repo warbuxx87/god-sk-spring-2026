@@ -229,4 +229,4 @@ To deploy manually: push to the connected Netlify branch, or drag-and-drop `inde
 - **Clan name “Guardians of Death”** — appears in the user-facing title/branding context but is not spelled out in the HTML source; the code uses “GoD SK” throughout.
 ## License
 
-Released under the [MIT License](LICENSE). Copyright (c) 2026 Ryan Breen.
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Summit Fortress Investments - Nevis IBC.
