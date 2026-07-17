@@ -329,7 +329,8 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
 .nav-btn{font-size:var(--fs-sm);font-family:var(--font);font-weight:500;padding:7px 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s,color .15s}
 .nav-btn:hover{background:var(--bg2);color:var(--tx)}
 .nav-btn:disabled{opacity:0.3;cursor:not-allowed}
-.trend-window-btn.active{background:var(--bg2);color:var(--tx);border-color:var(--bd2)}
+.trend-window-btn.active,.cycle-metric-btn.active,.history-view-btn.active{background:var(--bg2);color:var(--tx);border-color:var(--bd2)}
+.pill-progress{background:#E8F4FD;color:#185FA5}
 
 /* PWA install banner */
 .pwa-banner{
@@ -608,6 +609,17 @@ function getPlayerAliases(playerName){
 	return aliases;
 }
 
+function getCanonicalName(name){
+	if(!name) return name;
+	if(EXCLUDED_PLAYERS.has(name)) return EXCLUDED_PLAYERS.get(name);
+	var lower=name.toLowerCase();
+	var matched=null;
+	EXCLUDED_PLAYERS.forEach(function(canonical, oldName){
+		if(oldName.toLowerCase()===lower||canonical.toLowerCase()===lower) matched=canonical;
+	});
+	return matched||name;
+}
+
 function findPlayerInArchive(players, playerName){
 	if(!players||!players.length) return null;
 	var aliases=getPlayerAliases(playerName);
@@ -633,6 +645,8 @@ let clanTotalPts      = null;  // from sheet "Clan Total:" row (fresh each fetch
 let currentProfileName = null;
 let lbSort   = {col:'rank', dir:'asc'};
 let histSort = {col:'pace', dir:'desc'};
+let historyViewMode = 'cycle'; // 'cycle' | 'season'
+let seasonSort = {col:'total', dir:'desc'};
 let activeTab = 'overview';  // track current tab so silent refresh doesn't disrupt
 let countdownTimer = null;
 let nextRefreshAt = null;
@@ -1454,6 +1468,77 @@ function setHistSort(col){
 	renderHistory();
 }
 
+function setSeasonSort(col){
+	if(seasonSort.col===col) seasonSort.dir=seasonSort.dir==='asc'?'desc':'asc';
+	else{seasonSort.col=col;seasonSort.dir=col==='name'?'asc':'desc';}
+	renderHistory();
+}
+
+function setHistoryView(mode){
+	historyViewMode = mode==='season'?'season':'cycle';
+	renderHistory();
+}
+
+function buildSeasonData(){
+	var cycles=allArchives.slice().reverse().map(function(a){
+		return{label:a.label, days:a.days, isCurrent:false, players:a.players};
+	});
+	var curLabel=(currentCycleLabel||'Current').replace(/-\s*$/,'').trim()||'Current';
+	cycles.push({label:curLabel, days:currentCycleDays, isCurrent:true, players:allPlayers});
+
+	var byCanon={};
+	function ensure(name){
+		var canon=getCanonicalName(name);
+		if(!byCanon[canon]){
+			byCanon[canon]={name:canon, byCycle:cycles.map(function(){return 0;}), total:0, days:0, cyclesPlayed:0};
+		}
+		return byCanon[canon];
+	}
+
+	// Prefer display names from the current cycle, then seed everyone who appears anywhere
+	allPlayers.forEach(function(p){ ensure(p.name).name=p.name; });
+	cycles.forEach(function(cycle){
+		cycle.players.forEach(function(p){
+			var entry=ensure(p.name);
+			if(!cycle.isCurrent && entry.name===getCanonicalName(p.name)){
+				// keep archive spelling only if we don't already have a current-cycle name
+				if(!allPlayers.some(function(c){return getCanonicalName(c.name)===getCanonicalName(p.name);})){
+					entry.name=p.name;
+				}
+			}
+		});
+	});
+
+	Object.keys(byCanon).forEach(function(canon){
+		var entry=byCanon[canon];
+		cycles.forEach(function(cycle, ci){
+			var found=findPlayerInArchive(cycle.players, entry.name);
+			if(!found && entry.name!==canon) found=findPlayerInArchive(cycle.players, canon);
+			if(!found) return;
+			entry.byCycle[ci]=found.pts||0;
+			entry.total+=found.pts||0;
+			entry.cyclesPlayed++;
+			if(cycle.days&&cycle.days>0) entry.days+=cycle.days;
+		});
+		entry.ppd=entry.days>0?Math.round(entry.total/entry.days):null;
+	});
+
+	var players=Object.keys(byCanon).map(function(k){return byCanon[k];})
+		.filter(function(p){return p.cyclesPlayed>0;})
+		.sort(function(a,b){return b.total-a.total;});
+
+	var seasonTotal=players.reduce(function(s,p){return s+p.total;},0);
+	var seasonDays=cycles.reduce(function(s,c){return s+(c.days&&c.days>0?c.days:0);},0);
+	return{
+		cycles:cycles,
+		players:players,
+		seasonTotal:seasonTotal,
+		cycleCount:cycles.length,
+		seasonPpd:seasonDays>0?Math.round(seasonTotal/seasonDays):null,
+		topPlayer:players.length?players[0]:null
+	};
+}
+
 function parseCycleDays(label,isArchive){
 	if(!label) return null;
 	var MONTHS={January:0,February:1,March:2,April:3,May:4,June:5,July:6,August:7,September:8,October:9,November:10,December:11};
@@ -1989,6 +2074,18 @@ function renderHistory(){
 		el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--tx2)">Archive data not available.</div>';
 		return;
 	}
+
+	var toggleHtml='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+		+'<div class="nav-btns">'
+		+'<button class="nav-btn history-view-btn'+(historyViewMode==='cycle'?' active':'')+'" onclick="setHistoryView(\'cycle\')">By cycle</button>'
+		+'<button class="nav-btn history-view-btn'+(historyViewMode==='season'?' active':'')+'" onclick="setHistoryView(\'season\')">Season</button>'
+		+'</div></div>';
+
+	if(historyViewMode==='season'){
+		renderSeasonHistory(el, toggleHtml);
+		return;
+	}
+
 	var curMap={},prevMap={};
 	allPlayers.forEach(function(p){curMap[p.name]=p.pts;});
 	// Build case-insensitive lookup for archive — so renamed players still match
@@ -2073,7 +2170,7 @@ function renderHistory(){
 		+'<div class="tbl-scroll"><table class="player-table hist-table">'+theadHtml
 		+'<tbody id="hist-tbody"></tbody></table></div></div>';
 
-	el.innerHTML=selectorHtml+mHtml+chartsHtml+tableHtml;
+	el.innerHTML=toggleHtml+selectorHtml+mHtml+chartsHtml+tableHtml;
 
 	requestAnimationFrame(function(){
 		// Delta bar chart
@@ -2147,7 +2244,7 @@ function renderHistory(){
 				var bw=Math.round(Math.abs(p.delta)/maxD*100);
 				var bc=p.delta>=0?'#1D9E75':'#E24B4A';
 				var nt=p.isNew?'<span class="status-pill pill-hot" style="margin-left:6px;font-size:10px">NEW</span>':'';
-				var es=p.name.replace(/'/g,"\'");
+				var es=p.name.replace(/'/g,"\\'");
 				var ps=p.pace!==null&&p.pace>=0?'+':'';
 				var pc2=p.pace!==null&&p.pace>=0?'above':'below';
 				return '<tr class="clickable" onclick="openProfileFromContest(\'' + es + '\')">'
@@ -2163,6 +2260,117 @@ function renderHistory(){
 					+'</tr>';
 			}).join('');
 		}
+	});
+}
+
+function renderSeasonHistory(el, toggleHtml){
+	var season=buildSeasonData();
+	var cycles=season.cycles;
+	var players=season.players;
+	var top=season.topPlayer;
+
+	var mHtml='<div class="metrics">'
+		+'<div class="metric"><div class="label">Season total</div>'
+		+'<div class="val">'+Math.round(season.seasonTotal/1000).toLocaleString()+'k</div>'
+		+'<div class="sub">cumulative raw points</div></div>'
+		+'<div class="metric"><div class="label">Cycles</div>'
+		+'<div class="val">'+season.cycleCount+'</div>'
+		+'<div class="sub">archived + current (in progress)</div></div>'
+		+'<div class="metric"><div class="label">Clan pts/day</div>'
+		+'<div class="val">'+(season.seasonPpd!==null?season.seasonPpd.toLocaleString():'—')+'</div>'
+		+'<div class="sub">season total ÷ all cycle days</div></div>'
+		+'<div class="metric"><div class="label">Top contributor</div>'
+		+'<div class="val" style="font-size:var(--fs-lg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(top?top.name:'—')+'</div>'
+		+'<div class="sub">'+(top?top.total.toLocaleString()+' pts':'')+'</div></div>'
+		+'</div>';
+
+	var chartHtml='<div class="card" style="margin-bottom:0">'
+		+'<h3>Season totals by cycle <span style="font-weight:400;color:var(--tx2);font-size:var(--fs-xs)">top 18 · stacked · current in progress</span></h3>'
+		+'<div id="ec-season-stack" class="ec-chart" style="height:clamp(300px,40vw,460px)"></div>'
+		+'</div>';
+
+	var theadHtml='<thead><tr>'
+		+'<th style="width:48px">#</th>'
+		+'<th class="sortable hist-col-name" onclick="setSeasonSort(\'name\')" style="cursor:pointer">Player</th>'
+		+'<th class="sortable" onclick="setSeasonSort(\'total\')" style="text-align:right;cursor:pointer">Season total</th>'
+		+'<th class="sortable" onclick="setSeasonSort(\'ppd\')" style="text-align:right;cursor:pointer">Season pts/day</th>'
+		+'<th class="sortable" onclick="setSeasonSort(\'cycles\')" style="text-align:right;cursor:pointer">Cycles played</th>'
+		+'</tr></thead>';
+
+	var tableHtml='<div class="card" style="margin-top:12px">'
+		+'<h3>Season leaderboard <span style="font-weight:400;color:var(--tx2);font-size:var(--fs-xs)">click headers to sort · includes current cycle (in progress)</span></h3>'
+		+'<div class="tbl-scroll"><table class="player-table hist-table">'+theadHtml
+		+'<tbody id="season-tbody"></tbody></table></div></div>';
+
+	el.innerHTML=toggleHtml+mHtml+chartHtml+tableHtml;
+
+	requestAnimationFrame(function(){
+		var CYCLE_COLORS=['#185FA5','#7F77DD','#1D9E75','#D4537E','#BA7517','#378ADD','#5DCAA5','#E24B4A'];
+		var topN=players.slice(0,18);
+		var names=topN.map(function(p){return p.name.length>14?p.name.slice(0,14)+'…':p.name;});
+		var series=cycles.map(function(c, ci){
+			var color=CYCLE_COLORS[ci%CYCLE_COLORS.length];
+			var legendName=c.isCurrent ? c.label+' (in progress)' : c.label;
+			return{
+				name:legendName,
+				type:'bar',
+				stack:'season',
+				emphasis:{focus:'series'},
+				data:topN.map(function(p){return p.byCycle[ci]||0;}),
+				itemStyle:{
+					color:color,
+					opacity:c.isCurrent?0.55:1,
+					decal:c.isCurrent?{symbol:'line',symbolSize:5,rotation:Math.PI/4,color:'rgba(255,255,255,0.35)'}:null
+				}
+			};
+		});
+		var ch=getOrCreateChart('ec-season-stack');
+		if(ch) ch.setOption({
+			backgroundColor:CHART_BG,
+			aria:{decal:{show:true}},
+			tooltip:Object.assign({},TOOLTIP_STYLE(),{trigger:'axis',axisPointer:{type:'shadow'},
+				formatter:function(items){
+					if(!items||!items.length) return '';
+					var idx=items[0].dataIndex;
+					var p=topN[idx];
+					var s='<b>'+p.name+'</b><br/>Season: '+p.total.toLocaleString()+' pts';
+					items.forEach(function(it){
+						if(!it.value) return;
+						s+='<br/>'+it.marker+it.seriesName+': '+Number(it.value).toLocaleString();
+					});
+					return s;
+				}}),
+			legend:{type:'scroll',bottom:0,textStyle:{color:EC_TEXT(),fontSize:ecFs(10),fontFamily:'DM Sans'},itemWidth:10,itemHeight:10},
+			grid:{left:8,right:16,top:12,bottom:56,containLabel:true},
+			xAxis:{type:'category',data:names,
+				axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),rotate:35,interval:0},splitLine:{show:false}},
+			yAxis:{type:'value',axisLabel:{color:EC_TEXT(),fontSize:ecFs(10),
+				formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}},
+				splitLine:{lineStyle:{color:EC_SPLIT()}}},
+			series:series
+		});
+
+		var tbody=document.getElementById('season-tbody');
+		if(!tbody) return;
+		var col=seasonSort.col,dir=seasonSort.dir,mul=dir==='asc'?1:-1;
+		var rows=players.slice().sort(function(a,b){
+			if(col==='name') return mul*a.name.localeCompare(b.name);
+			if(col==='ppd') return mul*((a.ppd||0)-(b.ppd||0));
+			if(col==='cycles') return mul*(a.cyclesPlayed-b.cyclesPlayed);
+			return mul*(a.total-b.total);
+		});
+		tbody.innerHTML=rows.map(function(p,i){
+			var es=p.name.replace(/'/g,"\\'");
+			var inCurrent=!!findPlayerInArchive(allPlayers, p.name);
+			var click=inCurrent?' class="clickable" onclick="openProfileFromContest(\''+es+'\')"':'';
+			return '<tr'+click+'>'
+				+'<td style="width:48px;color:var(--tx2);font-family:var(--mono);font-size:var(--fs-xs)">'+(i+1)+'</td>'
+				+'<td class="hist-col-name" style="font-weight:500">'+p.name+'</td>'
+				+'<td style="text-align:right;font-family:var(--mono);font-weight:600">'+p.total.toLocaleString()+'</td>'
+				+'<td style="text-align:right;font-family:var(--mono);color:var(--tx2)">'+(p.ppd!==null?p.ppd.toLocaleString():'&mdash;')+'</td>'
+				+'<td style="text-align:right;font-family:var(--mono);color:var(--tx2)">'+p.cyclesPlayed+'/'+cycles.length+'</td>'
+				+'</tr>';
+		}).join('');
 	});
 }
 
@@ -2273,7 +2481,7 @@ function activateTab(name){
 		if(name==='overview') ['ec-top10','ec-donut','ec-dist'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
 		if(name==='compare') ['ec-cmp-radar','ec-cmp-bar'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
 		if(name==='activity') ['ec-act-hourly','ec-act-top24','ec-act-top7d'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
-		if(name==='history') ['ec-hist-delta','ec-hist-scatter'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
+		if(name==='history') ['ec-hist-delta','ec-hist-scatter','ec-season-stack'].forEach(id=>{if(ecInstances[id])ecInstances[id].resize();});
 		// premium tab — re-render in case data updated
 		if(name==='premium') renderPremium();
 	});
