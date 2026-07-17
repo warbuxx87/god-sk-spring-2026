@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-07-17
+
+### Added
+
+- Season total view on Cycle History — toggle cumulative season points, pts/day, and stacked per-cycle breakdown
+
+### Changed
+
+- Cycle History archive list updated with June 27–July 7 completed cycle
+
 ## [1.4.0](https://github.com/warbuxx87/god-sk-spring-2026/compare/god-sk-spring-2026-v1.3.3...god-sk-spring-2026-v1.4.0) (2026-06-28)
 
 
