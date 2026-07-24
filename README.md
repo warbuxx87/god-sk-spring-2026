@@ -5,7 +5,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![ECharts](https://img.shields.io/badge/ECharts-5.4.3-AA344D?style=flat-square)](https://echarts.apache.org/)
 [![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8?style=flat-square&logo=pwa)](index.html)
-[![Version](https://img.shields.io/badge/version-1.6.0-blue?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue?style=flat-square)](CHANGELOG.md)
 [![Netlify](https://img.shields.io/badge/Netlify-deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white)](https://god-sk-spring-2026.netlify.app/)
 
 Internal clan analytics dashboard for **Guardians of Death (GoD)** in *Total Battle*. A single HTML file reads live Google Sheets data and renders performance views for the current cycle.
@@ -16,7 +16,7 @@ Self-contained single-file HTML/JS dashboard — vanilla JavaScript, [ECharts](h
 
 Deployed on [Netlify](https://god-sk-spring-2026.netlify.app/) as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 736).
 
-Current version: `1.6.0` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
+Current version: `1.6.1` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
 
 ## Tech stack
 
