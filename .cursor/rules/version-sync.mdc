@@ -1,0 +1,19 @@
+---
+description: Keep version numbers in sync across README, package.json, manifest, and index.html when the changelog changes
+alwaysApply: true
+---
+
+# Version Sync
+
+Whenever you update `CHANGELOG.md` (new release entry or version bump), update the version number in ALL of these places in the same commit:
+
+1. `README.md` — the version badge (`img.shields.io/badge/version-X.Y.Z-blue`) and the `Current version: \`X.Y.Z\`` line
+2. `package.json` — `version`
+3. `.release-please-manifest.json` — `"."` value
+4. `index.html` — three spots marked `<!-- x-release-please-version -->` / `// x-release-please-version`:
+   - `<meta name="app-version">`
+   - the status-bar version tag (`vX.Y.Z`)
+   - the PWA manifest `version`
+5. `index.html` — prepend a matching entry to `CHANGELOG_ENTRIES` (the in-app changelog modal)
+
+Also keep the README's "Current archives (newest first)" list and gviz request count in sync when `ARCHIVE_SHEETS` changes.
