@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 38'%3E%3Crect width='38' height='38' rx='9' fill='%231a1a18'/%3E%3Cellipse cx='19' cy='17' rx='8' ry='7.5' fill='%23f0efe8'/%3E%3Crect x='11' y='21' width='16' height='5' rx='1.5' fill='%23f0efe8'/%3E%3Crect x='13.5' y='25' width='11' height='4' rx='2' fill='%23f0efe8'/%3E%3Cellipse cx='15.5' cy='17' rx='2.5' ry='2.5' fill='%231a1a18'/%3E%3Cellipse cx='22.5' cy='17' rx='2.5' ry='2.5' fill='%231a1a18'/%3E%3Cellipse cx='15.5' cy='17' rx='1.5' ry='1.5' fill='%23E24B4A'/%3E%3Cellipse cx='22.5' cy='17' rx='1.5' ry='1.5' fill='%23E24B4A'/%3E%3Cpolygon points='19,21 17,24 21,24' fill='%231a1a18'/%3E%3Crect x='13.5' y='26' width='2.5' height='2.5' rx='0.5' fill='%231a1a18'/%3E%3Crect x='17' y='26' width='2.5' height='3' rx='0.5' fill='%231a1a18'/%3E%3Crect x='20.5' y='26' width='2.5' height='3' rx='0.5' fill='%231a1a18'/%3E%3Crect x='24' y='26' width='2.5' height='2.5' rx='0.5' fill='%231a1a18'/%3E%3C/svg%3E">
 <link rel="manifest" id="pwa-manifest">
 <title>GoD SK — Spring 2026 Clan Dashboard</title>
-<meta name="app-version" content="1.6.1"><!-- x-release-please-version -->
+<meta name="app-version" content="1.6.2"><!-- x-release-please-version -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -427,7 +427,7 @@ body{font-family:var(--font);font-size:var(--fs-base);line-height:1.6;background
   <div class="status-bar">
     <span class="dot" id="status-dot" style="background:#EF9F27"></span>
     <span id="status-text">Fetching live data from Google Sheets...</span>
-    <span class="version-tag version-tag-btn" title="View changelog" onclick="openChangelog()" role="button" tabindex="0">v1.6.1</span><!-- x-release-please-version -->
+    <span class="version-tag version-tag-btn" title="View changelog" onclick="openChangelog()" role="button" tabindex="0">v1.6.2</span><!-- x-release-please-version -->
   </div>
   <div class="tabs">
     <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
@@ -521,7 +521,8 @@ const GID        = '181827579';
 const LOG_GID    = '1476283132';
 // Archived cycles — newest first. Add a new entry each time a cycle is archived.
 const ARCHIVE_SHEETS = [
-	{id:'1yAws-c9M77tjiznUQTz3NVJKuijJDup6cL4f6vmv9P4', gid:'181827579'},  // most recent
+	{id:'1r2YlgZ6XYtxMP1Td0KUmme9qY0xwNDSGIogqWlzTFVE', gid:'181827579'},  // most recent
+	{id:'1yAws-c9M77tjiznUQTz3NVJKuijJDup6cL4f6vmv9P4', gid:'181827579'},
 	{id:'11CRdC5-iITvrrxEaF-hVCjRNHrhtrMRe0ziw4PbfjOU', gid:'181827579'},
 	{id:'1axcher13cHG2eAmDu2sJje1Iu3Y5UVIBDB5VrBUFgJA', gid:'181827579'},
 	{id:'1H3IkN_isr4d3o2HwtID5mRktycMByZahvsmaw876g2k', gid:'181827579'},
@@ -540,6 +541,15 @@ const REFRESH_MAX_MS      = REFRESH_MAX_MINS    * 60 * 1000;
 
 // Changelog entries — prepend new releases here
 const CHANGELOG_ENTRIES = [
+	{
+		version: '1.6.2',
+		date: '2026-08-03',
+		changes: [
+			{type:'Fixed', text:'Profile "vs last cycle" always compares against the most recent completed cycle'},
+			{type:'Fixed', text:'Cycle day counts for abbreviated date labels so pts/day stays accurate'},
+			{type:'Changed', text:'Added completed cycle archives to Cycle History'}
+		]
+	},
 	{
 		version: '1.6.1',
 		date: '2026-07-24',
@@ -1557,22 +1567,35 @@ function buildSeasonData(){
 
 function parseCycleDays(label,isArchive){
 	if(!label) return null;
-	var MONTHS={January:0,February:1,March:2,April:3,May:4,June:5,July:6,August:7,September:8,October:9,November:10,December:11};
+	var MONTHS={January:0,February:1,March:2,April:3,May:4,June:5,July:6,August:7,September:8,October:9,November:10,December:11,
+		Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+	var yr=new Date().getFullYear();
+	// "July 22-8/1" or "Jul 22-08/01" — named start month, numeric end month/day
+	var slash=label.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.?\s+(\d{1,2})\s*[-–]\s*(\d{1,2})\s*\/\s*(\d{1,2})\b/i);
+	if(isArchive&&slash){
+		var sm=MONTHS[slash[1]];
+		var em=parseInt(slash[3],10)-1;
+		var sd=parseInt(slash[2],10), ed=parseInt(slash[4],10);
+		if(sm==null||em<0||em>11) return null;
+		var sy=yr, ey=yr;
+		if(em<sm) ey=yr+1;
+		var dSlash=Math.round((new Date(ey,em,ed)-new Date(sy,sm,sd))/864e5)+1;
+		return dSlash>0?dSlash:null;
+	}
 	// Find all month names in the label (may have 1 or 2 — e.g. "May 25-June 7")
-	var monthNames=label.match(/January|February|March|April|May|June|July|August|September|October|November|December/g)||[];
+	var monthNames=label.match(/January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/g)||[];
 	if(!monthNames.length) return null;
 	var startMonth=MONTHS[monthNames[0]];
 	var endMonth=monthNames.length>1?MONTHS[monthNames[1]]:startMonth;
 	var nums=label.match(/\d+/g)||[];
-	var yr=new Date().getFullYear();
 	if(isArchive&&nums.length>=2){
 		var startDay=parseInt(nums[0]),endDay=parseInt(nums[1]);
 		// Build real dates so cross-month spans calculate correctly
-		var sy=yr, ey=yr;
+		var sY=yr, eY=yr;
 		// If end month is before start month, the cycle crossed into next year
-		if(endMonth<startMonth) ey=yr+1;
-		var startDate=new Date(sy,startMonth,startDay);
-		var endDate=new Date(ey,endMonth,endDay);
+		if(endMonth<startMonth) eY=yr+1;
+		var startDate=new Date(sY,startMonth,startDay);
+		var endDate=new Date(eY,endMonth,endDay);
 		var d=Math.round((endDate-startDate)/864e5)+1;
 		return d>0?d:null;
 	}
@@ -1594,7 +1617,7 @@ function extractSheetMetric(table,label){
 }
 
 function extractCycleLabel(table){
-	var monthRe=/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/;
+	var monthRe=/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/;
 	// Scan rows 0-2 for any cell containing a month name
 	for(var ri=0;ri<Math.min(3,table.rows.length);ri++){
 		var row=table.rows[ri];if(!row||!row.c)continue;
@@ -2521,7 +2544,7 @@ var _pwaPrompt = null;
 	var manifest = {
 		name: 'GoD SK — Spring 2026',
 		short_name: 'GoD SK',
-		version: '1.6.1', // x-release-please-version
+		version: '1.6.2', // x-release-please-version
 		description: 'GoD SK Clan Analytics Dashboard',
 		start_url: window.location.href.split('#')[0],
 		display: 'standalone',

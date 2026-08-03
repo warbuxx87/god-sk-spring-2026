@@ -5,7 +5,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![ECharts](https://img.shields.io/badge/ECharts-5.4.3-AA344D?style=flat-square)](https://echarts.apache.org/)
 [![PWA](https://img.shields.io/badge/PWA-ready-5A0FC8?style=flat-square&logo=pwa)](index.html)
-[![Version](https://img.shields.io/badge/version-1.6.1-blue?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.2-blue?style=flat-square)](CHANGELOG.md)
 [![Netlify](https://img.shields.io/badge/Netlify-deployed-00C7B7?style=flat-square&logo=netlify&logoColor=white)](https://god-sk-spring-2026.netlify.app/)
 
 Internal clan analytics dashboard for **Guardians of Death (GoD)** in *Total Battle*. A single HTML file reads live Google Sheets data and renders performance views for the current cycle.
@@ -16,7 +16,7 @@ Self-contained single-file HTML/JS dashboard — vanilla JavaScript, [ECharts](h
 
 Deployed on [Netlify](https://god-sk-spring-2026.netlify.app/) as a static site (inferred from repo history; there is no `netlify.toml` in this repo). The sheet must be shared as **“Anyone with the link can view”** or fetches fail (see the error text in `loadData()` around line 736).
 
-Current version: `1.6.1` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
+Current version: `1.6.2` (shown in the status bar; tracked in `package.json` for [Release Please](.github/workflows/release-please.yml)).
 
 ## Tech stack
 
@@ -146,6 +146,7 @@ Configured at lines ~462–470:
 Current archives (newest first):
 
 ```js
+{id: '1r2YlgZ6XYtxMP1Td0KUmme9qY0xwNDSGIogqWlzTFVE', gid: '181827579'}  // July 22-August 1
 {id: '1yAws-c9M77tjiznUQTz3NVJKuijJDup6cL4f6vmv9P4', gid: '181827579'}  // July 7-22
 {id: '11CRdC5-iITvrrxEaF-hVCjRNHrhtrMRe0ziw4PbfjOU', gid: '181827579'}  // June 27-July 7
 {id: '1axcher13cHG2eAmDu2sJje1Iu3Y5UVIBDB5VrBUFgJA', gid: '181827579'}  // June 17-27
@@ -162,7 +163,7 @@ Current archives (newest first):
 - **Log tab (`LOG_GID`)** — timestamped chest events. Parsed by `parseLogEvents()` (line ~652): clean name col 6, type col 7, timestamp col 5 (fallback col 4). Point values mapped via `LOG_TYPE_PTS` (lines ~628–630), built from both `CHEST_COLS` and `PREMIUM_CHEST_COLS`. Log type strings match column names (e.g. `Magic Chest`, `Golden Chest`).
 - **Archive sheets** — same layout as the main tab. Loaded in parallel by `loadArchiveData()` (line ~680). Cycle label read from `rows[0].c[2]`; duration estimated by `parseCycleDays()`.
 
-On each full load, `loadData()` fetches the main sheet first, then `loadLogData()` and `loadArchiveData()` in parallel — **1 + N + 1** gviz requests where N = `ARCHIVE_SHEETS.length` (currently 8 total).
+On each full load, `loadData()` fetches the main sheet first, then `loadLogData()` and `loadArchiveData()` in parallel — **1 + N + 1** gviz requests where N = `ARCHIVE_SHEETS.length` (currently 9 total).
 
 ## Architecture notes
 

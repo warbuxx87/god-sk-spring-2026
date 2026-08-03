@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-08-03
+
+### Fixed
+
+- Profile "vs last cycle" always compares against the most recent completed cycle
+- Cycle day counts for abbreviated date labels so pts/day stays accurate
+
+### Changed
+
+- Added completed cycle archives to Cycle History
+
 ## [1.6.1] - 2026-07-24
 
 ### Changed
